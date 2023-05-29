@@ -8,10 +8,12 @@ import com.mycompany.proyectoprograiiiwebpage.presenter.Presenter;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -21,10 +23,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
-import javax.swing.SwingConstants;
-import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
-import javax.swing.border.LineBorder;
 
 public class View extends JFrame {
 
@@ -44,6 +43,8 @@ public class View extends JFrame {
 
     public void showGUIProducts() {
         JPanel panel = new JPanel();
+        JPanel navPanel = createNavigationPanel();
+        panel.add(navPanel);
         panel.setBorder(new EmptyBorder(15, 15, 10, 15));
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 
@@ -60,6 +61,7 @@ public class View extends JFrame {
             descriptionArea.setWrapStyleWord(true);
             descriptionArea.setPreferredSize(new Dimension(500, 50));
             JButton addButton = new JButton("Agregar al carrito");
+            JButton buyButton = new JButton("Comprar");
 
             GridBagConstraints constraints = new GridBagConstraints();
             constraints.gridx = 0;
@@ -76,14 +78,20 @@ public class View extends JFrame {
             constraints.gridx = 0;
             constraints.gridy++;
             constraints.gridwidth = 2;
-            constraints.anchor = GridBagConstraints.CENTER;
+            constraints.anchor = GridBagConstraints.ABOVE_BASELINE;
             productPanel.add(descriptionArea, constraints);
 
+            constraints.gridx = 1;
             constraints.gridy++;
+            constraints.gridwidth = 1;
+
             productPanel.add(addButton, constraints);
 
+            constraints.gridx = 0;
+            productPanel.add(buyButton, constraints);
+
             addButton.addActionListener((ActionEvent e) -> {
-                JOptionPane.showMessageDialog(productPanel, "Item agregado al carrito: " + product[1]);
+                JOptionPane.showMessageDialog(this, "Item agregado al carrito: " + product[1]);
             });
 
             productPanel.setBorder(BorderFactory.createLineBorder(Color.lightGray));
@@ -100,6 +108,26 @@ public class View extends JFrame {
         setExtendedState(JFrame.MAXIMIZED_VERT);
         setLocationRelativeTo(null);
 
+    }
+
+    public JPanel createNavigationPanel() {
+        JPanel navigationPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        navigationPanel.setBackground(Color.LIGHT_GRAY);
+
+        JButton loginButton = new JButton("Iniciar sesión");
+        loginButton.addActionListener((ActionEvent e) -> {
+
+        });
+
+        JButton cartButton = new JButton("Ver carrito");
+        cartButton.addActionListener((ActionEvent e) -> {
+
+        });
+
+        navigationPanel.add(loginButton);
+        navigationPanel.add(cartButton);
+
+        return navigationPanel;
     }
 
 }
