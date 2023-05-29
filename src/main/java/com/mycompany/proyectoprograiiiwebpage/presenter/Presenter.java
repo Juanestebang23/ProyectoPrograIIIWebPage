@@ -44,12 +44,7 @@ public class Presenter {
             Presenter presenter = new Presenter(model, view);
             view.setPresenter(presenter);
             presenter.run();
-            String[][] products = {
-                {"1", "Producto 1", "100", "Descripción del producto 1"},
-                {"2", "Producto 2", "200", "Descripción del producto 2"},
-                {"3", "Producto 3", "300", "Descripción del producto 3"}
-            };
-            //view.showCartProducts();
+            
         });
     }
 

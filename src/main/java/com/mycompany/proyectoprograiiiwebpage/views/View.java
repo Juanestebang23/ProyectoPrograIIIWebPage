@@ -4,17 +4,21 @@
  */
 package com.mycompany.proyectoprograiiiwebpage.views;
 
+import com.mycompany.proyectoprograiiiwebpage.models.CartItem;
 import com.mycompany.proyectoprograiiiwebpage.presenter.Presenter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.table.DefaultTableModel;
 
 public class View extends JFrame {
 
+    public static final Dimension SCREEN_DIMENSION = Toolkit.getDefaultToolkit().getScreenSize();
     private Presenter presenter;
-    private DefaultListModel<String> cartListModel;
+    private ArrayList<CartItem> cartList;
+    private JFrame cartFrame;
 
     public void setPresenter(Presenter presenter) {
         this.presenter = presenter;
@@ -26,23 +30,31 @@ public class View extends JFrame {
         setVisible(true);
         setResizable(false);
         showGUIProducts();
+        
+        cartFrame = new JFrame("Carrito");
+        cartFrame.setResizable(false);
+        cartFrame.setPreferredSize(new Dimension(300,400));
     }
 
     public void showGUIProducts() {
+        
+
         JPanel panel = new JPanel();
         JPanel navPanel = createNavigationPanel();
         panel.add(navPanel);
+
         panel.setBorder(new EmptyBorder(15, 15, 10, 15));
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-        cartListModel = new DefaultListModel<>();
+        cartList = new ArrayList<>();
 
         String[][] products = presenter.getProducts();
 
         for (String[] product : products) {
             JPanel productPanel = new JPanel(new GridBagLayout());
+            CartItem item = new CartItem(product[1], product[2], 1);
 
-            JLabel nameLabel = new JLabel(product[1]);
-            JLabel priceLabel = new JLabel("$ " + product[2]);
+            JLabel nameLabel = new JLabel(item.getProductName());
+            JLabel priceLabel = new JLabel("$ " + item.getPrice());
             JTextArea descriptionArea = new JTextArea(product[3]);
             descriptionArea.setEditable(false);
             descriptionArea.setLineWrap(true);
@@ -77,14 +89,30 @@ public class View extends JFrame {
 
             constraints.gridx = 0;
             productPanel.add(buyButton, constraints);
+            panel.add(productPanel);
 
             addButton.addActionListener((ActionEvent e) -> {
-                cartListModel.addElement(product[1]);
-                JOptionPane.showMessageDialog(this, "Item agregado al carrito: " + product[1]);
+
+                if (productExists(item.getProductName())) {
+                    JOptionPane.showMessageDialog(this, "Este producto ya esta agregado al carrito");
+                } else {
+                    cartList.add(item);
+                    JOptionPane.showMessageDialog(this, "Producto agregado al carrito: " + product[1]);
+                    showCartProducts();
+
+                }
+
+            });
+
+            buyButton.addActionListener((ActionEvent e) -> {
+                if (!productExists(item.getProductName())) {
+                    cartList.add(item);
+                }
+                showGUI_BuyProduct();
             });
 
             productPanel.setBorder(BorderFactory.createLineBorder(Color.lightGray));
-            panel.add(productPanel);
+
         }
 
         JScrollPane scrollPane = new JScrollPane(panel);
@@ -94,7 +122,7 @@ public class View extends JFrame {
         getContentPane().add(scrollPane, BorderLayout.CENTER);
         pack();
 
-        setExtendedState(JFrame.MAXIMIZED_VERT);
+        setSize(new Dimension(580, SCREEN_DIMENSION.height - 32));
         setLocationRelativeTo(null);
 
     }
@@ -110,12 +138,11 @@ public class View extends JFrame {
 
         JButton cartButton = new JButton("Ver carrito");
         cartButton.addActionListener((ActionEvent e) -> {
-            String[][] products = {
-                {"1", "Producto 1", "100", "Descripción del producto 1"},
-                {"2", "Producto 2", "200", "Descripción del producto 2"},
-                {"3", "Producto 3", "300", "Descripción del producto 3"}
-            };
-            showCartProducts();
+            if (cartList.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "El carrito esta vacio");
+            } else {
+                showCartProducts();
+            }
         });
 
         navigationPanel.add(loginButton);
@@ -124,40 +151,17 @@ public class View extends JFrame {
         return navigationPanel;
     }
 
-    /*
     public void showCartProducts() {
-        JFrame cartFrame = new JFrame("Carrito");
         JPanel panel = new JPanel();
+        refreshFrame(cartFrame, panel);
         panel.setBorder(new EmptyBorder(15, 15, 10, 15));
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-
-        JList<String> cartList = new JList<>(cartListModel);
-
-        JScrollPane scrollPane = new JScrollPane(cartList);
-        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-
-        panel.add(scrollPane);
-
-        cartFrame.getContentPane().setLayout(new BorderLayout());
-        cartFrame.getContentPane().add(panel, BorderLayout.CENTER);
-        cartFrame.pack();
-
-        cartFrame.setLocationRelativeTo(null);
-        cartFrame.setVisible(true);
-    }*/
-    public void showCartProducts() {
-        JFrame cartFrame = new JFrame("Carrito");
-        JPanel panel = new JPanel();
-        panel.setBorder(new EmptyBorder(15, 15, 10, 15));
-        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-
-        for (int i = 0; i < cartListModel.size(); i++) {
-            String productName = cartListModel.elementAt(i);
-            String[] product = presenter.getProductByName(productName);
+        for (int i = 0; i < cartList.size(); i++) {
+            CartItem item = cartList.get(i);
             JPanel productPanel = new JPanel(new GridBagLayout());
 
-            JLabel nameLabel = new JLabel(product[1]);
-            JLabel priceLabel = new JLabel("$ " + product[2]);
+            JLabel nameLabel = new JLabel(item.getProductName());
+            JLabel priceLabel = new JLabel("$ " + item.getPrice());
             JLabel quatityLabel = new JLabel("Cantidad:");
             JButton removeButton = new JButton("Sacar del carro");
             SpinnerNumberModel spinnerModel = new SpinnerNumberModel(1, 1, 100, 1);
@@ -186,9 +190,9 @@ public class View extends JFrame {
             productPanel.add(removeButton, constraints);
 
             removeButton.addActionListener((ActionEvent e) -> {
-                cartListModel.removeElement(product[1]);
+                cartList.remove(item);
                 cartFrame.dispose();
-                if (cartListModel.size() != 0) {
+                if (!cartList.isEmpty()) {
                     showCartProducts();
                 }
             });
@@ -196,6 +200,14 @@ public class View extends JFrame {
             productPanel.setBorder(BorderFactory.createLineBorder(Color.lightGray));
             panel.add(productPanel);
         }
+        JButton buyCart = new JButton("Comprar Carrito");
+        buyCart.setAlignmentX(CENTER_ALIGNMENT);
+
+        buyCart.addActionListener((ActionEvent e) -> {
+            cartFrame.dispose();
+            showGUI_BuyProduct();
+        });
+        panel.add(buyCart);
 
         JScrollPane scrollPane = new JScrollPane(panel);
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
@@ -204,9 +216,131 @@ public class View extends JFrame {
         cartFrame.getContentPane().add(scrollPane, BorderLayout.CENTER);
         cartFrame.pack();
 
-        cartFrame.setLocationRelativeTo(null);
+        cartFrame.setLocationRelativeTo(cartFrame);
         cartFrame.setVisible(true);
-
     }
 
+    public void showGUI_BuyProduct() {
+        JFrame purchaseFrame = new JFrame("Compra");
+        purchaseFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        purchaseFrame.setVisible(true);
+        purchaseFrame.setResizable(false);
+
+        JPanel panel = new JPanel(new GridBagLayout());
+        GridBagConstraints constraints = new GridBagConstraints();
+        constraints.insets = new Insets(5, 5, 5, 5);
+
+        // Crear el modelo de tabla con las columnas "Nombre", "Precio" y "Unidades"
+        DefaultTableModel tableModel = new DefaultTableModel();
+        tableModel.addColumn("Nombre");
+        tableModel.addColumn("Precio");
+        tableModel.addColumn("Unidades");
+
+        // Agregar los datos de los productos al modelo de tabla
+        for (CartItem product : cartList) {
+            Object[] rowData = {product.getProductName(), product.getPrice(), product.getUnits()};
+            tableModel.addRow(rowData);
+        }
+
+        // Crear la tabla con el modelo de tabla personalizado
+        JTable table = new JTable(tableModel);
+
+        // Agregar la tabla a un JScrollPane para permitir el desplazamiento
+        JScrollPane tableScrollPane = new JScrollPane(table);
+        tableScrollPane.setPreferredSize(new Dimension(400,150));
+
+        // Agregar el JScrollPane al panel principal
+        constraints.gridx = 0;
+        constraints.gridy = 0;
+        constraints.gridwidth = 2;
+        constraints.anchor = GridBagConstraints.WEST;
+        panel.add(tableScrollPane, constraints);
+
+        // Etiqueta y campo de texto para el número de documento
+        JLabel docLabel = new JLabel("Número de Documento:");
+        JTextField docField = new JTextField(20);
+
+        constraints.gridx = 0;
+        constraints.gridy = 1;
+        constraints.gridwidth = 1;
+        panel.add(docLabel, constraints);
+
+        constraints.gridx = 1;
+        panel.add(docField, constraints);
+
+        // Etiqueta y campo de texto para el nombre
+        JLabel nameLabel = new JLabel("Nombre:");
+        JTextField nameField = new JTextField(20);
+
+        constraints.gridx = 0;
+        constraints.gridy = 2;
+        panel.add(nameLabel, constraints);
+
+        constraints.gridx = 1;
+        panel.add(nameField, constraints);
+
+        // Etiqueta y campo de texto para el apellido
+        JLabel lastNameLabel = new JLabel("Apellido:");
+        JTextField lastNameField = new JTextField(20);
+
+        constraints.gridx = 0;
+        constraints.gridy = 3;
+        panel.add(lastNameLabel, constraints);
+
+        constraints.gridx = 1;
+        panel.add(lastNameField, constraints);
+
+        // Etiqueta y campo de texto para la dirección
+        JLabel addressLabel = new JLabel("Dirección:");
+        JTextField addressField = new JTextField(20);
+
+        constraints.gridx = 0;
+        constraints.gridy = 4;
+        panel.add(addressLabel, constraints);
+
+        constraints.gridx = 1;
+        panel.add(addressField, constraints);
+
+        // Botones para efectuar la compra y cancelar
+        JButton purchaseButton = new JButton("Efectuar Compra");
+        JButton cancelButton = new JButton("Cancelar");
+
+        purchaseButton.addActionListener((ActionEvent e) -> {
+            System.out.println("Comprar");
+        });
+
+        cancelButton.addActionListener((ActionEvent e) -> {
+            purchaseFrame.dispose();
+        });
+
+        constraints.gridx = 0;
+        constraints.gridy = 5;
+        constraints.gridwidth = 2;
+        constraints.anchor = GridBagConstraints.CENTER;
+        panel.add(purchaseButton, constraints);
+
+        constraints.gridx = 0;
+        constraints.gridy = 6;
+        panel.add(cancelButton, constraints);
+
+        purchaseFrame.getContentPane().add(panel);
+        purchaseFrame.setLocationRelativeTo(this);
+        purchaseFrame.pack();
+    }
+
+    public boolean productExists(String name) {
+        for (CartItem cartProduct : cartList) {
+            if (cartProduct.getProductName().equals(name)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public void refreshFrame(JFrame frame, JPanel newPanel) {
+        frame.getContentPane().removeAll(); // Elimina los componentes existentes del JFrame
+        frame.getContentPane().add(newPanel); // Agrega el nuevo panel al JFrame
+        frame.revalidate(); // Actualiza el diseño del JFrame
+        frame.repaint(); // Vuelve a pintar el JFrame
+    }
 }
