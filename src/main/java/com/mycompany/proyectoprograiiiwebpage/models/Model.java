@@ -5,21 +5,26 @@
 package com.mycompany.proyectoprograiiiwebpage.models;
 
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.LocalDate;
 
 public class Model {
 
-    public static final String INSERT_CLIENT_SQL_STATEMENT = "INSERT INTO cliente (id_cliente, nombres, apellidos, correo_electronico, direccion) VALUES (?, ?, ?, ?, ?)";
-    public static final String INSERT_PRODUCT_SQL_STATEMENT = "INSERT INTO producto (id_producto, nombre_producto, precio, descripcion) VALUES (?, ?, ?, ?)";
+    public static final String INSERT_CLIENTE_SQL_STATEMENT = "INSERT INTO cliente (id_cliente, nombres, apellidos, correo_electronico, direccion) VALUES (?, ?, ?, ?, ?)";
+    public static final String INSERT_PRODUCTO_SQL_STATEMENT = "INSERT INTO producto (id_producto, nombre_producto, precio, descripcion) VALUES (?, ?, ?, ?)";
+    public static final String INSERT_PEDIDO_SQL_STATEMENT = "INSERT INTO pedido (id_pedido, id_cliente, fecha) VALUES (?, ?, ?)";
+    public static final String INSERT_DETALLE_PEDIDO_SQL_STATEMENT = "INSERT INTO detalle_pedido (id_pedido, id_producto, cantidad) VALUES (?, ?, ?)";
+    public static final String SELECT_CLIENT_COUNT_SQL_STATEMENT = "SELECT count(*) FROM cliente WHERE id_cliente = ?";
 
     public boolean registerClient(int id, String name, String lastName, String email, String address) {
         try (Connection conn = MyConnection.getConnection()) {
 
-            PreparedStatement pstmt = conn.prepareStatement(INSERT_CLIENT_SQL_STATEMENT);
+            PreparedStatement pstmt = conn.prepareStatement(INSERT_CLIENTE_SQL_STATEMENT);
 
             pstmt.setInt(1, id);
             pstmt.setString(2, name);
@@ -37,15 +42,34 @@ public class Model {
         }
     }
 
-    public boolean registerProduct(int id, String name, double price, String description) {
+    public boolean registerProducto(int id, String name, double price, String description) {
         try (Connection conn = MyConnection.getConnection()) {
 
-            PreparedStatement pstmt = conn.prepareStatement(INSERT_PRODUCT_SQL_STATEMENT);
+            PreparedStatement pstmt = conn.prepareStatement(INSERT_PRODUCTO_SQL_STATEMENT);
 
             pstmt.setInt(1, id);
             pstmt.setString(2, name);
             pstmt.setDouble(3, price);
             pstmt.setString(4, description);
+
+            int affectedRow = pstmt.executeUpdate();
+            pstmt.close();
+            conn.close();
+            return affectedRow > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+    
+    public boolean registerPedido(int id, int id_cliente, LocalDate fecha) {
+        try (Connection conn = MyConnection.getConnection()) {
+
+            PreparedStatement pstmt = conn.prepareStatement(INSERT_PEDIDO_SQL_STATEMENT);
+
+            pstmt.setInt(1, id);
+            pstmt.setInt(2, id_cliente);
+            pstmt.setDate(3, Date.valueOf(fecha));
 
             int affectedRow = pstmt.executeUpdate();
             pstmt.close();
@@ -86,6 +110,45 @@ public class Model {
         }
     }
 
+    public boolean insert_detalle_pedido(int id_pedido, int id_cliente, int cantidad){
+        try (Connection conn = MyConnection.getConnection()) {
+
+            PreparedStatement pstmt = conn.prepareStatement(INSERT_DETALLE_PEDIDO_SQL_STATEMENT);
+
+            pstmt.setInt(1, id_pedido);
+            pstmt.setInt(2, id_cliente);
+            pstmt.setInt(3, cantidad);
+
+            int affectedRow = pstmt.executeUpdate();
+            pstmt.close();
+            conn.close();
+            return affectedRow > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+    
+    public boolean clienteExists(int id){
+        try (Connection conn = MyConnection.getConnection()) {
+
+            PreparedStatement pstmt = conn.prepareStatement(SELECT_CLIENT_COUNT_SQL_STATEMENT);
+            pstmt.setInt(1, id);
+            
+            ResultSet resultSet = pstmt.executeQuery();
+            if (resultSet.next()) {
+                int count = resultSet.getInt(1);
+                return count > 0;
+            }
+            pstmt.close();
+            conn.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+        return false;
+    }
+    
     public int getRowCount() throws SQLException {
         int count = 0;
         try (Connection connection = MyConnection.getConnection()) {
@@ -101,25 +164,5 @@ public class Model {
         }
 
     }
-
-    /*
-    public String buildStatement(String tableName, String[] values) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("INSERT INTO ").append(tableName).append(" (");
-        for (int i = 0; i < values.length; i++) {
-            sb.append(values[i]);
-            if (i < values.length - 1) {
-                sb.append(", ");
-            }
-        }
-        sb.append(") VALUES (");
-        for (int i = 0; i < values.length; i++) {
-            sb.append("?");
-            if (i < values.length - 1) {
-                sb.append(", ");
-            }
-        }
-        sb.append(")");
-        return sb.toString();
-    }*/
+    
 }

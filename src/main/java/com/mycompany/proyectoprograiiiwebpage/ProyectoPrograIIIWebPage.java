@@ -10,7 +10,7 @@ public class ProyectoPrograIIIWebPage {
         Faker faker = new Faker();// Libreria github para obtener datos falsos
 
         //Llenar la tabla con productos
-        int cantidadProductos = 10; // El número de productos que se quiere agregar
+        int cantidadProductos = 20; // El número de productos que se quiere agregar
         for (int i = 0; i < cantidadProductos; i++) {
             int id = (int) (Math.random()*10000);
             String name = faker.commerce().productName();
@@ -22,7 +22,7 @@ public class ProyectoPrograIIIWebPage {
             System.out.println("price: "+ price);
             System.out.println("description: "+ description);
             
-            boolean success = model.registerProduct(id, name, price, description);
+            boolean success = model.registerProducto(id, name, price, description);
 
             if (success) {
                 System.out.println("Agregado");

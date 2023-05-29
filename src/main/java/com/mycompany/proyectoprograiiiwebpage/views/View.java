@@ -16,9 +16,18 @@ import javax.swing.table.DefaultTableModel;
 public class View extends JFrame {
 
     public static final Dimension SCREEN_DIMENSION = Toolkit.getDefaultToolkit().getScreenSize();
+    public static final String SUCCESSFUL_PURCHASE_MESSAGE = "Gracias por su compra";
+    public static final String SUCCESSFUL_CLIENT_REGISTER_MESSAGE = "Cliente registrado exitosamente";
+    public static final String SUCCESSFUL_ORDER_REGISTER_MESSAGE = "Pedido registrado exitosamente";
+    public static final String ERROR_PURCHASE_MESSAGE = "Error al realizar la compra";
+    public static final String ERROR_CLIENT_REGISTER_MESSAGE = "Error al registrar el cliente";
+    public static final String ERROR_ORDER_REGISTER_MESSAGE = "Error al registrar el pedido";
+
     private Presenter presenter;
     private ArrayList<CartItem> cartList;
+    private ArrayList<CartItem> auxCartList;// tabla auxiliar para no perder el carrito
     private JFrame cartFrame;
+    private boolean unitaryPurchase;
 
     public void setPresenter(Presenter presenter) {
         this.presenter = presenter;
@@ -30,14 +39,13 @@ public class View extends JFrame {
         setVisible(true);
         setResizable(false);
         showGUIProducts();
-        
+
         cartFrame = new JFrame("Carrito");
         cartFrame.setResizable(false);
-        cartFrame.setPreferredSize(new Dimension(300,400));
+        cartFrame.setPreferredSize(new Dimension(300, 400));
     }
 
     public void showGUIProducts() {
-        
 
         JPanel panel = new JPanel();
         JPanel navPanel = createNavigationPanel();
@@ -92,27 +100,24 @@ public class View extends JFrame {
             panel.add(productPanel);
 
             addButton.addActionListener((ActionEvent e) -> {
-
+                unitaryPurchase = false;
                 if (productExists(item.getProductName())) {
                     JOptionPane.showMessageDialog(this, "Este producto ya esta agregado al carrito");
                 } else {
                     cartList.add(item);
                     JOptionPane.showMessageDialog(this, "Producto agregado al carrito: " + product[1]);
                     showCartProducts();
-
                 }
 
             });
 
             buyButton.addActionListener((ActionEvent e) -> {
-                if (!productExists(item.getProductName())) {
-                    cartList.add(item);
-                }
+                unitaryPurchase = true;
+                auxCartList = new ArrayList<>();
+                auxCartList.add(item);
                 showGUI_BuyProduct();
             });
-
             productPanel.setBorder(BorderFactory.createLineBorder(Color.lightGray));
-
         }
 
         JScrollPane scrollPane = new JScrollPane(panel);
@@ -141,6 +146,7 @@ public class View extends JFrame {
             if (cartList.isEmpty()) {
                 JOptionPane.showMessageDialog(this, "El carrito esta vacio");
             } else {
+                unitaryPurchase = false;
                 showCartProducts();
             }
         });
@@ -164,7 +170,7 @@ public class View extends JFrame {
             JLabel priceLabel = new JLabel("$ " + item.getPrice());
             JLabel quatityLabel = new JLabel("Cantidad:");
             JButton removeButton = new JButton("Sacar del carro");
-            SpinnerNumberModel spinnerModel = new SpinnerNumberModel(1, 1, 100, 1);
+            SpinnerNumberModel spinnerModel = new SpinnerNumberModel(item.getUnits(), 1, 100, 1);
             JSpinner quantitySpinner = new JSpinner(spinnerModel);
 
             GridBagConstraints constraints = new GridBagConstraints();
@@ -189,6 +195,11 @@ public class View extends JFrame {
             constraints.gridy++;
             productPanel.add(removeButton, constraints);
 
+            spinnerModel.addChangeListener(e -> {
+                int selectedUnits = (int) spinnerModel.getValue();
+                item.setUnits(selectedUnits);
+            });
+
             removeButton.addActionListener((ActionEvent e) -> {
                 cartList.remove(item);
                 cartFrame.dispose();
@@ -200,6 +211,7 @@ public class View extends JFrame {
             productPanel.setBorder(BorderFactory.createLineBorder(Color.lightGray));
             panel.add(productPanel);
         }
+
         JButton buyCart = new JButton("Comprar Carrito");
         buyCart.setAlignmentX(CENTER_ALIGNMENT);
 
@@ -225,6 +237,7 @@ public class View extends JFrame {
         purchaseFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         purchaseFrame.setVisible(true);
         purchaseFrame.setResizable(false);
+        purchaseFrame.setLocationRelativeTo(this);
 
         JPanel panel = new JPanel(new GridBagLayout());
         GridBagConstraints constraints = new GridBagConstraints();
@@ -236,8 +249,9 @@ public class View extends JFrame {
         tableModel.addColumn("Precio");
         tableModel.addColumn("Unidades");
 
-        // Agregar los datos de los productos al modelo de tabla
-        for (CartItem product : cartList) {
+        ArrayList<CartItem> purchaseList = ((unitaryPurchase) ? auxCartList : cartList);
+        // Agregar los datos de los productos al modelo de tabla unitaria o del carrito
+        for (CartItem product : purchaseList) {
             Object[] rowData = {product.getProductName(), product.getPrice(), product.getUnits()};
             tableModel.addRow(rowData);
         }
@@ -247,7 +261,7 @@ public class View extends JFrame {
 
         // Agregar la tabla a un JScrollPane para permitir el desplazamiento
         JScrollPane tableScrollPane = new JScrollPane(table);
-        tableScrollPane.setPreferredSize(new Dimension(400,150));
+        tableScrollPane.setPreferredSize(new Dimension(400, 150));
 
         // Agregar el JScrollPane al panel principal
         constraints.gridx = 0;
@@ -301,12 +315,27 @@ public class View extends JFrame {
         constraints.gridx = 1;
         panel.add(addressField, constraints);
 
+        //// Etiqueta y campo de texto para el email
+        JLabel emailLabel = new JLabel("Correo electronico:");
+        JTextField emailField = new JTextField(20);
+
+        constraints.gridx = 0;
+        constraints.gridy = 5;
+        panel.add(emailLabel, constraints);
+
+        constraints.gridx = 1;
+        panel.add(emailField, constraints);
+
         // Botones para efectuar la compra y cancelar
         JButton purchaseButton = new JButton("Efectuar Compra");
         JButton cancelButton = new JButton("Cancelar");
 
         purchaseButton.addActionListener((ActionEvent e) -> {
-            System.out.println("Comprar");
+            int docNum = Integer.parseInt(docField.getText());
+            if (!presenter.clientExists(docNum)) {
+                presenter.insertCliente(docNum, nameField.getText(), lastNameField.getText(), emailField.getText(), addressField.getText());
+            }
+            presenter.insertPedido(docNum);
         });
 
         cancelButton.addActionListener((ActionEvent e) -> {
@@ -314,17 +343,16 @@ public class View extends JFrame {
         });
 
         constraints.gridx = 0;
-        constraints.gridy = 5;
+        constraints.gridy = 6;
         constraints.gridwidth = 2;
         constraints.anchor = GridBagConstraints.CENTER;
         panel.add(purchaseButton, constraints);
 
         constraints.gridx = 0;
-        constraints.gridy = 6;
+        constraints.gridy = 7;
         panel.add(cancelButton, constraints);
 
         purchaseFrame.getContentPane().add(panel);
-        purchaseFrame.setLocationRelativeTo(this);
         purchaseFrame.pack();
     }
 
@@ -343,4 +371,13 @@ public class View extends JFrame {
         frame.revalidate(); // Actualiza el diseño del JFrame
         frame.repaint(); // Vuelve a pintar el JFrame
     }
+
+    public void showSuccessMessage(String message) {
+        JOptionPane.showMessageDialog(this, message);
+    }
+
+    public void showErrorMessage(String message) {
+        JOptionPane.showMessageDialog(this, message, "Error", ERROR);
+    }
+
 }

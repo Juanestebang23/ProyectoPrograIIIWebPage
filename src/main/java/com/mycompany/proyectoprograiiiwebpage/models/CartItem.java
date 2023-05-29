@@ -26,4 +26,10 @@ public class CartItem {
     public int getUnits() {
         return units;
     }
+
+    public void setUnits(int units) {
+        this.units = units;
+    }
+    
+    
 }
