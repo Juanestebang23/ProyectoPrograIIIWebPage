@@ -634,7 +634,6 @@ public class View extends JFrame {
         purchaseFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         purchaseFrame.setVisible(true);
         purchaseFrame.setResizable(false);
-        purchaseFrame.setLocationRelativeTo(this);
 
         JPanel panel = new JPanel(new GridBagLayout());
         GridBagConstraints constraints = new GridBagConstraints();
@@ -728,19 +727,33 @@ public class View extends JFrame {
         JButton cancelButton = new JButton("Cancelar");
 
         purchaseButton.addActionListener((ActionEvent e) -> {
-            int docNum = Integer.parseInt(docField.getText());
-            if (!presenter.idExists(docNum)) {
-                presenter.insertCliente(docNum, nameField.getText(), lastNameField.getText(), emailField.getText(), addressField.getText());
+            int docNum = getInt(docField.getText());
+            String name = nameField.getText();
+            String lastName = lastNameField.getText();
+            String email = emailField.getText();
+            String address = addressField.getText();
+            if (docNum != -1) {
+                if (isValid(name) && isValid(lastName) && isValid(email) && isValid(address)) {
+                    if (!presenter.idExists(docNum)) {
+                        presenter.insertCliente(docNum, name, lastName, email, address);
+                    }
+                    int id_pedido = Presenter.getRandomNumber(1000, 9999);
+                    if (!presenter.idExists(docNum)) {
+                        presenter.insertCliente(docNum, nameField.getText(), lastNameField.getText(), emailField.getText(), addressField.getText());
+                    }
+                    presenter.insertPedido(id_pedido, docNum);
+                    for (CartItem item : purchaseList) {
+                        presenter.insert_detalle_pedido(id_pedido, item.getId(), item.getUnits());
+                    }
+                    purchaseFrame.dispose();
+                    cartList.removeAll(cartList);
+                } else {
+                    JOptionPane.showMessageDialog(purchaseFrame, "Error: No debe haber campos vacios");
+                }
+            } else {
+                docField.setText("");
+                JOptionPane.showMessageDialog(purchaseFrame, "Error: Ingrese un número entero válido para el ID");
             }
-            int id_pedido = Presenter.getRandomNumber(1000, 9999);
-            if (!presenter.idExists(docNum)) {
-                presenter.insertCliente(docNum, nameField.getText(), lastNameField.getText(), emailField.getText(), addressField.getText());
-            }
-            presenter.insertPedido(id_pedido, docNum);
-            for (CartItem item : purchaseList) {
-                presenter.insert_detalle_pedido(id_pedido, item.getId(), item.getUnits());
-            }
-            purchaseFrame.dispose();
 
         });
 
@@ -760,6 +773,8 @@ public class View extends JFrame {
 
         purchaseFrame.getContentPane().add(panel);
         purchaseFrame.pack();
+        purchaseFrame.setLocationRelativeTo(null);
+
     }
 
     public boolean productExists(String name) {
@@ -776,6 +791,9 @@ public class View extends JFrame {
         frame.getContentPane().add(newPanel); // Agrega el nuevo panel al JFrame
         frame.revalidate(); // Actualiza el diseño del JFrame
         frame.repaint(); // Vuelve a pintar el JFrame
+    }
+    public boolean isValid(String text) {
+        return !text.equals("");
     }
 
     public void showSuccessMessage(String message) {
