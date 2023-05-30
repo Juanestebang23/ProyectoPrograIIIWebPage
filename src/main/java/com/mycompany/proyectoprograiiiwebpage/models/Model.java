@@ -426,4 +426,10 @@ public class Model {
             table.addCell(columna4);
         }
     }
+    public String getUserAdmin(){
+        return adminUser;
+    }
+    public String getUserPassword(){
+        return password;
+    }
 }

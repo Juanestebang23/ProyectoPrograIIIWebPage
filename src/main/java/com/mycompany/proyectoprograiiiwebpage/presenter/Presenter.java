@@ -76,7 +76,7 @@ public class Presenter {
     }
 
     public boolean idExists(int id) {
-        return model.idExists( id);
+        return model.idExists(id);
     }
 
     public static int getRandomNumber(int min, int max) {
@@ -85,6 +85,14 @@ public class Presenter {
 
     public LocalDate getCurrentlyDate() {
         return LocalDate.now();
+    }
+
+    public String getUserAdmin() {
+        return model.getUserAdmin();
+    }
+
+    public String getUserPassword() {
+        return model.getUserPassword();
     }
 
     public static void main(String[] args) {

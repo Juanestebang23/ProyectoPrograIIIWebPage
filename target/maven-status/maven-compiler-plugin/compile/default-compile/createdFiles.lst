@@ -1,2 +1,7 @@
+com\mycompany\proyectoprograiiiwebpage\ProyectoPrograIIIWebPage.class
+com\mycompany\proyectoprograiiiwebpage\models\CartItem.class
 com\mycompany\proyectoprograiiiwebpage\models\Model.class
+com\mycompany\proyectoprograiiiwebpage\views\View.class
+com\mycompany\proyectoprograiiiwebpage\models\MyConnection.class
+com\mycompany\proyectoprograiiiwebpage\models\Client.class
 com\mycompany\proyectoprograiiiwebpage\presenter\Presenter.class
