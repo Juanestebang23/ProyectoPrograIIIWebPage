@@ -10,12 +10,12 @@ public class ProyectoPrograIIIWebPage {
         Faker faker = new Faker();// Libreria github para obtener datos falsos
 
         //Llenar la tabla con productos
-        int cantidadProductos = 20; // El número de productos que se quiere agregar
+        int cantidadProductos = 10; // El número de productos que se quiere agregar
         for (int i = 0; i < cantidadProductos; i++) {
             int id = (int) (Math.random()*10000);
             String name = faker.commerce().productName();
             double price = faker.number().randomDouble(2, 10000, 500000);
-            String description = faker.shakespeare().romeoAndJulietQuote();
+            String description = faker.shakespeare().hamletQuote() + faker.shakespeare().romeoAndJulietQuote();
             
             System.out.println("id: "+ id);
             System.out.println("name: "+ name);

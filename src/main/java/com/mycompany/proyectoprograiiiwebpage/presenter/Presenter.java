@@ -6,7 +6,6 @@ package com.mycompany.proyectoprograiiiwebpage.presenter;
 
 import com.mycompany.proyectoprograiiiwebpage.models.Model;
 import com.mycompany.proyectoprograiiiwebpage.views.View;
-import java.sql.Date;
 import java.time.LocalDate;
 import javax.swing.SwingUtilities;
 
@@ -36,27 +35,31 @@ public class Presenter {
     public void insertProducto(int id, String name, double price, String description) {
         boolean success = model.registerProducto(id, name, price, description);
         if (success) {
-            view.showSuccessMessage(View.SUCCESSFUL_CLIENT_REGISTER_MESSAGE);
+            //view.showSuccessMessage(View.);
         } else {
             view.showErrorMessage(View.ERROR_CLIENT_REGISTER_MESSAGE);
         }
     }
-    
-    public void insertPedido(int id_cliente) {
-        int id_random = getRandomNumber(1000, 9999);
+
+    public void insertPedido(int id_pedido, int id_cliente) {
         LocalDate fechaPedido = getCurrentlyDate();
-        boolean success = model.registerPedido( id_random, id_cliente, fechaPedido);
+        boolean success = model.registerPedido(id_pedido, id_cliente, fechaPedido);
         if (success) {
             view.showSuccessMessage(View.SUCCESSFUL_ORDER_REGISTER_MESSAGE);
         } else {
-            view.showErrorMessage(View.ERROR_CLIENT_REGISTER_MESSAGE);
+            view.showErrorMessage(View.ERROR_ORDER_REGISTER_MESSAGE);
         }
     }
-    
-    public void insert_detalle_pedido(){
-        
+
+    public void insert_detalle_pedido(int id_pedido, int id_producto, int cantidad) {
+        boolean succcess = model.insert_detalle_pedido(id_pedido, id_producto, cantidad);
+        if (succcess) {
+            view.showSuccessMessage(View.SUCCESSFUL_ORDER_DETAIL_REGISTER_MESSAGE);
+        } else {
+            view.showErrorMessage(View.ERROR_ORDER_DETAIL_REGISTER_MESSAGE);
+        }
     }
-    
+
     public String[][] getProducts() {
         return model.selectAllProducts();
     }
@@ -72,14 +75,15 @@ public class Presenter {
         return product;
     }
 
-    public boolean clientExists(int id){
-        return model.clienteExists(id);
+    public boolean idExists(int id) {
+        return model.idExists( id);
     }
+
     public static int getRandomNumber(int min, int max) {
         return (int) (Math.random() * (max - min + 1)) + min;
     }
-    
-    public LocalDate getCurrentlyDate(){
+
+    public LocalDate getCurrentlyDate() {
         return LocalDate.now();
     }
 

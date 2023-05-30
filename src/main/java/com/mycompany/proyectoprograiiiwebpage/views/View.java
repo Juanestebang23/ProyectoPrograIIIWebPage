@@ -19,9 +19,11 @@ public class View extends JFrame {
     public static final String SUCCESSFUL_PURCHASE_MESSAGE = "Gracias por su compra";
     public static final String SUCCESSFUL_CLIENT_REGISTER_MESSAGE = "Cliente registrado exitosamente";
     public static final String SUCCESSFUL_ORDER_REGISTER_MESSAGE = "Pedido registrado exitosamente";
+    public static final String SUCCESSFUL_ORDER_DETAIL_REGISTER_MESSAGE = "Detalle de pedido registrado exitosamente";
     public static final String ERROR_PURCHASE_MESSAGE = "Error al realizar la compra";
     public static final String ERROR_CLIENT_REGISTER_MESSAGE = "Error al registrar el cliente";
     public static final String ERROR_ORDER_REGISTER_MESSAGE = "Error al registrar el pedido";
+    public static final String ERROR_ORDER_DETAIL_REGISTER_MESSAGE = "Error al registrar el detalle del pedido";
 
     private Presenter presenter;
     private ArrayList<CartItem> cartList;
@@ -59,7 +61,7 @@ public class View extends JFrame {
 
         for (String[] product : products) {
             JPanel productPanel = new JPanel(new GridBagLayout());
-            CartItem item = new CartItem(product[1], product[2], 1);
+            CartItem item = new CartItem( Integer.parseInt(product[0]), product[1], product[2], 1);
 
             JLabel nameLabel = new JLabel(item.getProductName());
             JLabel priceLabel = new JLabel("$ " + item.getPrice());
@@ -99,17 +101,18 @@ public class View extends JFrame {
             productPanel.add(buyButton, constraints);
             panel.add(productPanel);
 
-            addButton.addActionListener((ActionEvent e) -> {
-                unitaryPurchase = false;
-                if (productExists(item.getProductName())) {
-                    JOptionPane.showMessageDialog(this, "Este producto ya esta agregado al carrito");
-                } else {
-                    cartList.add(item);
-                    JOptionPane.showMessageDialog(this, "Producto agregado al carrito: " + product[1]);
-                    showCartProducts();
-                }
+            addButton
+                    .addActionListener((ActionEvent e) -> {
+                        unitaryPurchase = false;
+                        if (productExists(item.getProductName())) {
+                            JOptionPane.showMessageDialog(this, "Este producto ya esta agregado al carrito");
+                        } else {
+                            cartList.add(item);
+                            JOptionPane.showMessageDialog(this, "Producto agregado al carrito: " + product[1]);
+                            showCartProducts();
+                        }
 
-            });
+                    });
 
             buyButton.addActionListener((ActionEvent e) -> {
                 unitaryPurchase = true;
@@ -332,10 +335,19 @@ public class View extends JFrame {
 
         purchaseButton.addActionListener((ActionEvent e) -> {
             int docNum = Integer.parseInt(docField.getText());
-            if (!presenter.clientExists(docNum)) {
+            if (!presenter.idExists(docNum)) {
                 presenter.insertCliente(docNum, nameField.getText(), lastNameField.getText(), emailField.getText(), addressField.getText());
             }
-            presenter.insertPedido(docNum);
+            int id_pedido = Presenter.getRandomNumber(1000, 9999);
+            if (!presenter.idExists(docNum)) {
+                presenter.insertCliente(docNum, nameField.getText(), lastNameField.getText(), emailField.getText(), addressField.getText());
+            }
+            presenter.insertPedido(id_pedido, docNum);
+            for (CartItem item : purchaseList) {
+                presenter.insert_detalle_pedido(id_pedido, item.getId(), item.getUnits());
+            }
+            purchaseFrame.dispose();
+
         });
 
         cancelButton.addActionListener((ActionEvent e) -> {

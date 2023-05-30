@@ -5,16 +5,22 @@
 package com.mycompany.proyectoprograiiiwebpage.models;
 
 public class CartItem {
+    private int id;
     private String productName;
     private String price;
     private int units;
 
-    public CartItem(String productName, String price, int units) {
+    public CartItem(int id, String productName, String price, int units) {
+        this.id = id;
         this.productName = productName;
         this.price = price;
         this.units = units;
     }
 
+    public int getId() {
+        return id;
+    }
+    
     public String getProductName() {
         return productName;
     }

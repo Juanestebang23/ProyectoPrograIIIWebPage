@@ -20,6 +20,7 @@ public class Model {
     public static final String INSERT_PEDIDO_SQL_STATEMENT = "INSERT INTO pedido (id_pedido, id_cliente, fecha) VALUES (?, ?, ?)";
     public static final String INSERT_DETALLE_PEDIDO_SQL_STATEMENT = "INSERT INTO detalle_pedido (id_pedido, id_producto, cantidad) VALUES (?, ?, ?)";
     public static final String SELECT_CLIENT_COUNT_SQL_STATEMENT = "SELECT count(*) FROM cliente WHERE id_cliente = ?";
+    public static final String SELECT_ORDER_DETAIL_COUNT_SQL_STATEMENT = "SELECT count(*) FROM detalle_pedido WHERE id_detalle_pedido = ?";
 
     public boolean registerClient(int id, String name, String lastName, String email, String address) {
         try (Connection conn = MyConnection.getConnection()) {
@@ -110,13 +111,13 @@ public class Model {
         }
     }
 
-    public boolean insert_detalle_pedido(int id_pedido, int id_cliente, int cantidad){
+    public boolean insert_detalle_pedido(int id_pedido, int id_producto, int cantidad){
         try (Connection conn = MyConnection.getConnection()) {
 
             PreparedStatement pstmt = conn.prepareStatement(INSERT_DETALLE_PEDIDO_SQL_STATEMENT);
 
             pstmt.setInt(1, id_pedido);
-            pstmt.setInt(2, id_cliente);
+            pstmt.setInt(2, id_producto);
             pstmt.setInt(3, cantidad);
 
             int affectedRow = pstmt.executeUpdate();
@@ -129,7 +130,7 @@ public class Model {
         }
     }
     
-    public boolean clienteExists(int id){
+    public boolean idExists(int id){
         try (Connection conn = MyConnection.getConnection()) {
 
             PreparedStatement pstmt = conn.prepareStatement(SELECT_CLIENT_COUNT_SQL_STATEMENT);
