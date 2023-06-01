@@ -151,12 +151,32 @@ public class Model {
     }
 
     public boolean updateClient(String attribute, String value, int id) {
-        String query = "UPDATE cliente SET " + attribute + " = ? WHERE ID = ?";
+        String query = "UPDATE cliente SET " + attribute + " = ? WHERE ID_CLIENTE = ?";
+        try (Connection connection = MyConnection.getConnection()) {
+            PreparedStatement statement = connection.prepareStatement(query);
+        
+            statement.setString(1, value);
+
+            statement.setInt(2, id);
+
+            int rowsAffected = statement.executeUpdate();
+
+            connection.close();
+            statement.close();
+            return rowsAffected > 0;
+
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            return false;
+        }
+    }
+    public boolean updateProduct(String attribute, String value, int id) {
+        String query = "UPDATE producto SET " + attribute + " = ? WHERE ID_PRODUCTO = ?";
         try (Connection connection = MyConnection.getConnection()) {
             PreparedStatement statement = connection.prepareStatement(query);
 
-            if (value.equalsIgnoreCase("ID_CLIENTE")) {
-                statement.setInt(1, Integer.parseInt(value));
+            if (value.equalsIgnoreCase("PRECIO")) {
+                statement.setDouble(1, Double.parseDouble(value));
             } else {
                 statement.setString(1, value);
             }
@@ -169,6 +189,48 @@ public class Model {
             statement.close();
             return rowsAffected > 0;
 
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            return false;
+        }
+    }
+    
+    public boolean fillTableSelect(DefaultTableModel tableModel, String attribute, String value) {
+        try (Connection connection = MyConnection.getConnection()) {
+            String query = "SELECT * FROM producto WHERE " + attribute + " LIKE ?";
+            PreparedStatement statement = connection.prepareStatement(query);
+            statement.setString(1, value);
+            ResultSet resultSet = statement.executeQuery();
+
+            int columnCount = resultSet.getMetaData().getColumnCount();
+            int dataCount = 0;
+
+            for (int i = 1; i <= columnCount; i++) {
+                tableModel.addColumn(resultSet.getMetaData().getColumnLabel(i));
+            }
+
+            while (resultSet.next()) {
+                dataCount++;
+                Object[] row = new Object[columnCount];
+                for (int i = 1; i <= columnCount; i++) {
+                    row[i - 1] = resultSet.getObject(i);
+                }
+                tableModel.addRow(row);
+            }
+
+            while (resultSet.next()) {
+
+                int id = resultSet.getInt("ID");
+                String nombre = resultSet.getString("NOMBRE");
+                int precio = resultSet.getInt("PRECIO");
+                String descripcion = resultSet.getString("DESCRIPCION");
+
+                tableModel.addRow(new Object[]{id, nombre, precio, descripcion});
+            }
+            connection.close();
+            resultSet.close();
+            statement.close();
+            return dataCount > 0;
         } catch (SQLException ex) {
             ex.printStackTrace();
             return false;
@@ -475,176 +537,7 @@ public class Model {
             table.addCell(columna5);
         }
     }
-
-    public void createPDFDetalle_Pedidos(String rutaDetino, String nombreArchivo) {
-        try (Connection connection = MyConnection.getConnection()) {
-            Statement statement = connection.createStatement();
-            ResultSet resultSet = statement.executeQuery(QUERY_DETAIL_ORDER);
-            generateTablePDFDetalle_Pedidos(resultSet, rutaDetino, nombreArchivo);
-            resultSet.close();
-            statement.close();
-        } catch (SQLException e) {
-            System.err.println("ERROR!!! ---->" + e.getMessage());
-        }
-    }
-
-    public void generateTablePDFDetalle_Pedidos(ResultSet resultSet, String rutaDestino, String nombreArchivo) {
-        try {
-            Document document = new Document();
-
-            String rutaCompleta = rutaDestino + "/" + nombreArchivo + EXTENSION;
-            PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(rutaCompleta));
-            document.open();
-
-            PdfPTable table = new PdfPTable(3);
-            table.setWidths(new float[]{1, 1, 1});
-            addTableHeaderDetalle_Pedidos(table);
-            addTableDataDetalle_Pedidos(table, resultSet);
-            document.add(table);
-
-            document.close();
-
-        } catch (DocumentException | FileNotFoundException | SQLException ex) {
-            System.err.println("Error!!!" + ex.getMessage());
-        }
-    }
-
-    private static void addTableHeaderDetalle_Pedidos(PdfPTable table) {
-        PdfPCell header1 = new PdfPCell(new Phrase(HEADER_IDORDER_DETAIL_ORDER));
-        PdfPCell header2 = new PdfPCell(new Phrase(HEADER_IDPRODUCT_DETAIL_ORDER));
-        PdfPCell header3 = new PdfPCell(new Phrase(HEADER_QUANTITY_DETAIL_ORDER));
-
-        table.addCell(header1);
-        table.addCell(header2);
-        table.addCell(header3);
-    }
-
-    private static void addTableDataDetalle_Pedidos(PdfPTable table, ResultSet resultSet) throws SQLException {
-        while (resultSet.next()) {
-            String columna1 = resultSet.getString(HEADER_IDORDER_DETAIL_ORDER);
-            String columna2 = resultSet.getString(HEADER_IDPRODUCT_DETAIL_ORDER);
-            String columna3 = resultSet.getString(HEADER_QUANTITY_DETAIL_ORDER);
-
-            table.addCell(columna1);
-            table.addCell(columna2);
-            table.addCell(columna3);
-        }
-    }
-
-    public void createPDFPedidos(String rutaDetino, String nombreArchivo) {
-        try (Connection connection = MyConnection.getConnection()) {
-            Statement statement = connection.createStatement();
-            ResultSet resultSet = statement.executeQuery(QUERY_ORDER);
-            generateTablePDFPedidos(resultSet, rutaDetino, nombreArchivo);
-            resultSet.close();
-            statement.close();
-        } catch (SQLException e) {
-            System.err.println("ERROR!!! ---->" + e.getMessage());
-        }
-    }
-
-    public void generateTablePDFPedidos(ResultSet resultSet, String rutaDestino, String nombreArchivo) {
-        try {
-            Document document = new Document();
-
-            String rutaCompleta = rutaDestino + "/" + nombreArchivo + EXTENSION;
-            PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(rutaCompleta));
-            document.open();
-
-            PdfPTable table = new PdfPTable(3);
-            table.setWidths(new float[]{1, 1, 1});
-            addTableHeaderPedidos(table);
-            addTableDataPedidos(table, resultSet);
-            document.add(table);
-
-            document.close();
-
-        } catch (DocumentException | FileNotFoundException | SQLException ex) {
-            System.err.println("Error!!!" + ex.getMessage());
-        }
-    }
-
-    private static void addTableHeaderPedidos(PdfPTable table) {
-        PdfPCell header1 = new PdfPCell(new Phrase(HEADER_ID_ORDER));
-        PdfPCell header2 = new PdfPCell(new Phrase(HEADER_IDCLIENT_ORDER));
-        PdfPCell header3 = new PdfPCell(new Phrase(HEADER_DATE_ORDER));
-
-        table.addCell(header1);
-        table.addCell(header2);
-        table.addCell(header3);
-    }
-
-    private static void addTableDataPedidos(PdfPTable table, ResultSet resultSet) throws SQLException {
-        while (resultSet.next()) {
-            String columna1 = resultSet.getString(HEADER_ID_ORDER);
-            String columna2 = resultSet.getString(HEADER_IDCLIENT_ORDER);
-            String columna3 = resultSet.getString(HEADER_DATE_ORDER);
-
-            table.addCell(columna1);
-            table.addCell(columna2);
-            table.addCell(columna3);
-        }
-    }
-
-    public void createPDFProducts(String rutaDetino, String nombreArchivo) {
-        try (Connection connection = MyConnection.getConnection()) {
-            Statement statement = connection.createStatement();
-            ResultSet resultSet = statement.executeQuery(QUERY_PRODUCT);
-            generateTablePDFProducts(resultSet, rutaDetino, nombreArchivo);
-            resultSet.close();
-            statement.close();
-        } catch (SQLException e) {
-            System.err.println("ERROR!!! ---->" + e.getMessage());
-        }
-    }
-
-    public void generateTablePDFProducts(ResultSet resultSet, String rutaDestino, String nombreArchivo) {
-        try {
-            Document document = new Document();
-
-            String rutaCompleta = rutaDestino + "/" + nombreArchivo + EXTENSION;
-            PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(rutaCompleta));
-            document.open();
-
-            PdfPTable table = new PdfPTable(4);
-            table.setWidths(new float[]{1, 1, 1, 1});
-            addTableHeaderProducts(table);
-            addTableDataProducts(table, resultSet);
-            document.add(table);
-
-            document.close();
-
-        } catch (DocumentException | FileNotFoundException | SQLException ex) {
-            System.err.println("Error!!!" + ex.getMessage());
-        }
-    }
-
-    private static void addTableHeaderProducts(PdfPTable table) {
-        PdfPCell header1 = new PdfPCell(new Phrase(HEADER_ID_PRODUCT));
-        PdfPCell header2 = new PdfPCell(new Phrase(HEADER_NAME_PRODUCT));
-        PdfPCell header3 = new PdfPCell(new Phrase(HEADER_PRICE_PRODUCT));
-        PdfPCell header4 = new PdfPCell(new Phrase(HEADER_DESCRIPTION_PRODUCT));
-
-        table.addCell(header1);
-        table.addCell(header2);
-        table.addCell(header3);
-        table.addCell(header4);
-    }
-
-    private static void addTableDataProducts(PdfPTable table, ResultSet resultSet) throws SQLException {
-        while (resultSet.next()) {
-            String columna1 = resultSet.getString(HEADER_ID_PRODUCT);
-            String columna2 = resultSet.getString(HEADER_NAME_PRODUCT);
-            String columna3 = resultSet.getString(HEADER_PRICE_PRODUCT);
-            String columna4 = resultSet.getString(HEADER_DESCRIPTION_PRODUCT);
-
-            table.addCell(columna1);
-            table.addCell(columna2);
-            table.addCell(columna3);
-            table.addCell(columna4);
-        }
-    }
-
+    
     public String getUserAdmin() {
         return ADMIN_USER;
     }

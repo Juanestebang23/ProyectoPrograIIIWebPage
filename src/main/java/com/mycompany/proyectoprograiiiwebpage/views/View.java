@@ -20,8 +20,8 @@ public class View extends JFrame {
     public static final String MAIN_WINDOW_SUB_TITTLE = "Seleccione una opción:";
 
     public static final String[] TABLES = {"CLIENTE", "PRODUCTO"};
-    public static final String[] ATTRIBUTES_CLIENT = {"ID", "NOMBRES", "APELLIDOS", "CORREO", "DIRECCION"};
-    public static final String[] ATTRIBUTES_PRODUCTS = {"ID", "NOMBRE", "PRECIO", "DESCRIPCION"};
+    public static final String[] ATTRIBUTES_CLIENT = {"NOMBRES", "APELLIDOS", "CORREO_ELECTRONICO", "DIRECCION"};
+    public static final String[] ATTRIBUTES_PRODUCTS = {"NOMBRE_PRODUCTO", "PRECIO", "DESCRIPCION"};
 
     public static final Dimension SCREEN_DIMENSION = Toolkit.getDefaultToolkit().getScreenSize();
     public static final String SUCCESSFUL_PURCHASE_MESSAGE = "Gracias por su compra";
@@ -312,7 +312,7 @@ public class View extends JFrame {
 
         JButton searchButton = new JButton("Consultar registros");
         searchButton.addActionListener((ActionEvent e) -> {
-            //searchFrame();
+            searchFrame();
         });
 
         panel.add(windowTitle);
@@ -592,9 +592,7 @@ public class View extends JFrame {
             insertFrame.revalidate();
         });
         insertFrame.setVisible(true);
-
     }
-
     private JPanel createPanelClientToUpdate() {
         JPanel panel = new JPanel();
         panel.setLayout(new GridLayout(4, 2, 5, 10));
@@ -613,11 +611,9 @@ public class View extends JFrame {
         updateButton.addActionListener((ActionEvent e) -> {
             int id = getInt(idField.getText());
             String value = valueField.getText();
-            int valueInt = getInt(value);
             String attribute = attributeComboBox.getSelectedItem().toString();
-
             if (id != -1) {
-                //presenter.updatePerson(id, attribute, value);
+                presenter.updateClient(id, attribute, value);
             } else {
                 if (id == -1) {
                     JOptionPane.showMessageDialog(panel, "Error: Ingrese un número entero válido para el ID");
@@ -625,7 +621,6 @@ public class View extends JFrame {
                 showGUI_UPDATE();
             }
         });
-
         panel.add(idLabel);
         panel.add(idField);
         panel.add(attributeLabel);
@@ -637,7 +632,7 @@ public class View extends JFrame {
     }
 
     private JPanel createPanelProductToUpdate() {
-JPanel panel = new JPanel();
+        JPanel panel = new JPanel();
         panel.setLayout(new GridLayout(4, 2, 5, 10));
 
         JLabel idLabel = new JLabel("ID:");
@@ -658,11 +653,10 @@ JPanel panel = new JPanel();
             String attribute = attributeComboBox.getSelectedItem().toString();
 
             if (id != -1) {
-                if (attribute.equals("EDAD") && valueInt == -1) {
+                if(attribute.equals("PRECIO") && valueInt == -1){
                     JOptionPane.showMessageDialog(panel, "Error: Ingrese un número entero válido para la edad");
-                } else {
-                    //presenter.updateProduct(id, attribute, value);
                 }
+                presenter.updateProduct(id, attribute, value);
             } else {
                 if (id == -1) {
                     JOptionPane.showMessageDialog(panel, "Error: Ingrese un número entero válido para el ID");
@@ -693,7 +687,7 @@ JPanel panel = new JPanel();
         JLabel attributeLabel = new JLabel("Atributo:");
         JLabel valueLabel = new JLabel("Valor:");
 
-        JComboBox attributeComboBox = new JComboBox<>();//"FALTA AÑADIR"
+        JComboBox attributeComboBox = new JComboBox<>(ATTRIBUTES_PRODUCTS);//"FALTA AÑADIR"
         attributeComboBox.addItem("ID");
 
         JTextField valueTextField = new JTextField();
@@ -709,7 +703,7 @@ JPanel panel = new JPanel();
             int valueInt = getInt(value);
             String attribute = attributeComboBox.getSelectedItem().toString();
 
-            if (attribute.equals("EDAD") && valueInt == -1) {
+            if (attribute.equals("PRECIO") && valueInt == -1) {
                 JOptionPane.showMessageDialog(frame, "Error: Ingrese un número entero válido para la edad");
             } else if (attribute.equals("ID") && valueInt == -1) {
                 JOptionPane.showMessageDialog(frame, "Error: Ingrese un número entero válido para el ID");
@@ -718,17 +712,6 @@ JPanel panel = new JPanel();
                 frame.dispose();
             }
         });
-        /*frame.dispose();
-                if (id == -1) {
-                    JOptionPane.showMessageDialog(frame, "Error: Ingrese un número entero válido para el ID");
-                }
-                showGUI_UPDATE();*/
-
-        ///
-        //String attribute = attributeComboBox.getSelectedItem().toString();
-        //String value = valueTextField.getText();
-        //showGUI_SELECT_ATTRIBUTE(attribute, value);
-        //frame.dispose();
         frame.add(panel, BorderLayout.CENTER);
 
         frame.add(searchButton, BorderLayout.SOUTH);
@@ -750,7 +733,7 @@ JPanel panel = new JPanel();
         JScrollPane scrollPane = new JScrollPane(table);
         selectFrame.add(scrollPane, BorderLayout.CENTER);
 
-        //presenter.fillDataSelect(tableModel, attribute, value);
+        presenter.fillDataSelect(tableModel, attribute, value);
         selectFrame.setVisible(true);
     }
 

@@ -101,6 +101,30 @@ public class Presenter {
             view.showSuccessMessage(View.EMPTY_DB_MESSAGE);
         }
     }
+    public void fillDataSelect(DefaultTableModel tableModel, String attribute, String value) {
+        boolean success = model.fillTableSelect(tableModel, attribute, value);
+        if (!success) {
+            view.showSuccessMessage(View.EMPTY_DB_MESSAGE);
+        }
+    }
+    public void updateClient(int id, String attribute, String value) {
+        boolean success = model.updateClient(attribute, value, id);
+        if (success) {
+            view.showSuccessMessage(View.SUCCESSFUL_CLIENT_REGISTER_MESSAGE);
+        } else {
+            view.showErrorMessage(View.ID_ERROR_MESSAGE);
+            view.showGUI_UPDATE();
+        }
+    }
+    public void updateProduct(int id, String attribute, String value) {
+        boolean success = model.updateProduct(attribute, value, id);
+        if (success) {
+            view.showSuccessMessage(View.SUCCESSFUL_PRODUCT_REGISTER_MESSAGE);
+        } else {
+            view.showErrorMessage(View.ID_ERROR_MESSAGE);
+            view.showGUI_UPDATE();
+        }
+    }
 
     public String[][] getProducts() {
         return model.selectAllProducts();
