@@ -8,6 +8,7 @@ import com.mycompany.proyectoprograiiiwebpage.models.CartItem;
 import com.mycompany.proyectoprograiiiwebpage.presenter.Presenter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -20,10 +21,12 @@ public class View extends JFrame {
     public static final String SUCCESSFUL_CLIENT_REGISTER_MESSAGE = "Cliente registrado exitosamente";
     public static final String SUCCESSFUL_ORDER_REGISTER_MESSAGE = "Pedido registrado exitosamente";
     public static final String SUCCESSFUL_ORDER_DETAIL_REGISTER_MESSAGE = "Detalle de pedido registrado exitosamente";
+    public static final String SUCCESSFUL_INVOICE_REGISTER_MESSAGE = "Factura generada exitosamente";
     public static final String ERROR_PURCHASE_MESSAGE = "Error al realizar la compra";
     public static final String ERROR_CLIENT_REGISTER_MESSAGE = "Error al registrar el cliente";
     public static final String ERROR_ORDER_REGISTER_MESSAGE = "Error al registrar el pedido";
     public static final String ERROR_ORDER_DETAIL_REGISTER_MESSAGE = "Error al registrar el detalle del pedido";
+    public static final String ERROR_INVOICE_REGISTER_MESSAGE = "Error al generar la faactura";
 
     private Presenter presenter;
     private ArrayList<CartItem> cartList;
@@ -61,7 +64,7 @@ public class View extends JFrame {
 
         for (String[] product : products) {
             JPanel productPanel = new JPanel(new GridBagLayout());
-            CartItem item = new CartItem(Integer.parseInt(product[0]), product[1], product[2], 1);
+            CartItem item = new CartItem(Integer.parseInt(product[0]), product[1], Double.parseDouble(product[2]), 1);
 
             JLabel nameLabel = new JLabel(item.getProductName());
             JLabel priceLabel = new JLabel("$ " + item.getPrice());
@@ -338,18 +341,22 @@ public class View extends JFrame {
             String lastName = lastNameField.getText();
             String email = emailField.getText();
             String address = addressField.getText();
+            LocalDate fechaPedido = presenter.getCurrentlyDate();
+
             if (docNum != -1) {
                 if (isValid(name) && isValid(lastName) && isValid(email) && isValid(address)) {
                     if (!presenter.idExists(docNum)) {
                         presenter.insertCliente(docNum, name, lastName, email, address);
                     }
                     int id_pedido = Presenter.getRandomNumber(1000, 9999);
+                    int id_factura = Presenter.getRandomNumber(1000, 9999);
                     if (!presenter.idExists(docNum)) {
-                        presenter.insertCliente(docNum, nameField.getText(), lastNameField.getText(), emailField.getText(), addressField.getText());
+                        presenter.insertCliente(docNum, name, lastName, email, address);
                     }
-                    presenter.insertPedido(id_pedido, docNum);
+                    presenter.insertPedido(id_pedido, docNum, fechaPedido);
                     for (CartItem item : purchaseList) {
                         presenter.insert_detalle_pedido(id_pedido, item.getId(), item.getUnits());
+                        presenter.insert_factura(id_factura, name + " " + lastName, email, address, item.getProductName(), item.getPrice(), item.getUnits(), fechaPedido);
                     }
                     purchaseFrame.dispose();
                     cartList.removeAll(cartList);
@@ -419,5 +426,7 @@ public class View extends JFrame {
     public void showErrorMessage(String message) {
         JOptionPane.showMessageDialog(this, message, "Error", ERROR);
     }
+
+    
 
 }

@@ -41,8 +41,7 @@ public class Presenter {
         }
     }
 
-    public void insertPedido(int id_pedido, int id_cliente) {
-        LocalDate fechaPedido = getCurrentlyDate();
+    public void insertPedido(int id_pedido, int id_cliente, LocalDate fechaPedido) {
         boolean success = model.registerPedido(id_pedido, id_cliente, fechaPedido);
         if (success) {
             view.showSuccessMessage(View.SUCCESSFUL_ORDER_REGISTER_MESSAGE);
@@ -52,14 +51,23 @@ public class Presenter {
     }
 
     public void insert_detalle_pedido(int id_pedido, int id_producto, int cantidad) {
-        boolean succcess = model.insert_detalle_pedido(id_pedido, id_producto, cantidad);
-        if (succcess) {
+        boolean success = model.insert_detalle_pedido(id_pedido, id_producto, cantidad);
+        if (success) {
             view.showSuccessMessage(View.SUCCESSFUL_ORDER_DETAIL_REGISTER_MESSAGE);
         } else {
             view.showErrorMessage(View.ERROR_ORDER_DETAIL_REGISTER_MESSAGE);
         }
     }
 
+    public void insert_factura(int id, String nombre_completo, String correo_electronico, String direccion, String nombre_producto, double precio, int cantidad, LocalDate fecha) {
+        boolean success = model.insert_factura(id, nombre_completo, correo_electronico, direccion, nombre_producto, precio, cantidad, fecha);
+        if (success) {
+            view.showSuccessMessage(View.SUCCESSFUL_ORDER_DETAIL_REGISTER_MESSAGE);
+        } else {
+            view.showErrorMessage(View.ERROR_ORDER_DETAIL_REGISTER_MESSAGE);
+        }
+    }
+    
     public String[][] getProducts() {
         return model.selectAllProducts();
     }
