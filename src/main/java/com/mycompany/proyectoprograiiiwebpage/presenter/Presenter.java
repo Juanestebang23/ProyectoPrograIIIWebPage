@@ -125,6 +125,15 @@ public class Presenter {
             view.showGUI_UPDATE();
         }
     }
+    
+    public void createPDFFactura(String rutaDestino, String nombreArchivo){
+        boolean success = model.createPDFFacturas(rutaDestino, nombreArchivo);
+        if (success) {
+            view.showSuccessMessage(View.SUCCESSFUL_GENERATE_PDF);
+        } else {
+            view.showErrorMessage(View.GENERATE_PDF_ERROR_MESSAGE);
+        }
+    }
 
     public String[][] getProducts() {
         return model.selectAllProducts();
@@ -168,7 +177,6 @@ public class Presenter {
             Presenter presenter = new Presenter(model, view);
             view.setPresenter(presenter);
             presenter.run();
-
         });
     }
 }

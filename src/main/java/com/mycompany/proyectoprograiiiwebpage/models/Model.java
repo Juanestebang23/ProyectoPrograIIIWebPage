@@ -29,28 +29,19 @@ public class Model {
     public static final String SELECT_ORDER_DETAIL_COUNT_SQL_STATEMENT = "SELECT count(*) FROM detalle_pedido WHERE id_detalle_pedido = ?";
 
     public static final String QUERY_CLIENT = "SELECT * FROM cliente";
+    public static final String QUERY_FACTURA = "SELECT * FROM factura";
     public static final String QUERY_DETAIL_ORDER = "SELECT * FROM detalle_pedido";
     public static final String QUERY_ORDER = "SELECT * FROM pedido";
     public static final String QUERY_PRODUCT = "SELECT * FROM producto";
 
-    public static final String HEADER_ID_CLIENT = "ID CLIENTE";
-    public static final String HEADER_NAME_CLIENT = "NOMBRE";
-    public static final String HEADER_LASTNAME_CLIENT = "APELLIDO";
-    public static final String HEADER_EMAIL_CLIENT = "CORREO ELECTRONICO";
-    public static final String HEADER_ADDRESS_CLIENT = "DIRECCION";
-
-    public static final String HEADER_IDORDER_DETAIL_ORDER = "ID PEDIDO";
-    public static final String HEADER_IDPRODUCT_DETAIL_ORDER = "ID PRODUCTO";
-    public static final String HEADER_QUANTITY_DETAIL_ORDER = "CANTIDAD";
-
-    public static final String HEADER_ID_ORDER = "ID PEDIDO";
-    public static final String HEADER_IDCLIENT_ORDER = "ID CLIENTE";
-    public static final String HEADER_DATE_ORDER = "FECHA";
-
-    public static final String HEADER_ID_PRODUCT = "ID PRODUCTO";
-    public static final String HEADER_NAME_PRODUCT = "NOMBRE";
-    public static final String HEADER_PRICE_PRODUCT = "PRECIO";
-    public static final String HEADER_DESCRIPTION_PRODUCT = "DESCRIPCION";
+    public static final String HEADER_ID_PEDIDO_FACTURA = "ID PEDIDO";
+    public static final String HEADER_NAME_FACTURA = "NOMBRE COMPLETO";
+    public static final String HEADER_EMAIL_FACTURA = "CORREO";
+    public static final String HEADER_ADDRESS_FACTURA = "DIRECCION";
+    public static final String HEADER_NAME_PRODUCT_FACTURA = "NOMBRE PRODUCTO";
+    public static final String HEADER_PRICE_FACTURA = "PRECIO";
+    public static final String HEADER_QUANTITY_FACTURA = "CANTIDAD";
+    public static final String HEADER_DATE_FACTURA = "FECHA";
 
     public static final String EXTENSION = ".pdf";
 
@@ -476,15 +467,18 @@ public class Model {
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    public void createPDFClients(String rutaDetino, String nombreArchivo) {
+    public boolean createPDFFacturas(String rutaDetino, String nombreArchivo) {
         try (Connection connection = MyConnection.getConnection()) {
             Statement statement = connection.createStatement();
-            ResultSet resultSet = statement.executeQuery(QUERY_CLIENT);
+            ResultSet resultSet = statement.executeQuery(QUERY_FACTURA);
             generateTablePDFClientes(resultSet, rutaDetino, nombreArchivo);
+            
             resultSet.close();
             statement.close();
+            return true;
         } catch (SQLException e) {
             System.err.println("ERROR!!! ---->" + e.getMessage());
+            return false;
         }
     }
 
@@ -495,8 +489,8 @@ public class Model {
             PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(rutaCompleta));
             document.open();
 
-            PdfPTable table = new PdfPTable(5);
-            table.setWidths(new float[]{1, 1, 1, 1, 1});
+            PdfPTable table = new PdfPTable(8);
+            table.setWidths(new float[]{1, 1, 1, 1, 1, 1, 1, 1});
             addTableHeaderClients(table);
             addTableDataClients(table, resultSet);
             document.add(table);
@@ -509,32 +503,44 @@ public class Model {
     }
 
     private static void addTableHeaderClients(PdfPTable table) {
-        PdfPCell header1 = new PdfPCell(new Phrase(HEADER_ID_CLIENT));
-        PdfPCell header2 = new PdfPCell(new Phrase(HEADER_NAME_CLIENT));
-        PdfPCell header3 = new PdfPCell(new Phrase(HEADER_LASTNAME_CLIENT));
-        PdfPCell header4 = new PdfPCell(new Phrase(HEADER_EMAIL_CLIENT));
-        PdfPCell header5 = new PdfPCell(new Phrase(HEADER_ADDRESS_CLIENT));
+        PdfPCell header1 = new PdfPCell(new Phrase(HEADER_ID_PEDIDO_FACTURA));
+        PdfPCell header2 = new PdfPCell(new Phrase(HEADER_NAME_FACTURA));
+        PdfPCell header3 = new PdfPCell(new Phrase(HEADER_EMAIL_FACTURA));
+        PdfPCell header4 = new PdfPCell(new Phrase(HEADER_ADDRESS_FACTURA));
+        PdfPCell header5 = new PdfPCell(new Phrase(HEADER_NAME_PRODUCT_FACTURA));
+        PdfPCell header6 = new PdfPCell(new Phrase(HEADER_PRICE_FACTURA));
+        PdfPCell header7 = new PdfPCell(new Phrase(HEADER_QUANTITY_FACTURA));
+        PdfPCell header8 = new PdfPCell(new Phrase(HEADER_DATE_FACTURA));
 
         table.addCell(header1);
         table.addCell(header2);
         table.addCell(header3);
         table.addCell(header4);
         table.addCell(header5);
+        table.addCell(header6);
+        table.addCell(header7);
+        table.addCell(header8);
     }
 
     private static void addTableDataClients(PdfPTable table, ResultSet resultSet) throws SQLException {
         while (resultSet.next()) {
-            String columna1 = resultSet.getString(HEADER_ID_CLIENT);
-            String columna2 = resultSet.getString(HEADER_NAME_CLIENT);
-            String columna3 = resultSet.getString(HEADER_LASTNAME_CLIENT);
-            String columna4 = resultSet.getString(HEADER_EMAIL_CLIENT);
-            String columna5 = resultSet.getString(HEADER_ADDRESS_CLIENT);
+            String columna1 = resultSet.getString(HEADER_ID_PEDIDO_FACTURA);
+            String columna2 = resultSet.getString(HEADER_NAME_FACTURA);
+            String columna3 = resultSet.getString(HEADER_EMAIL_FACTURA);
+            String columna4 = resultSet.getString(HEADER_ADDRESS_FACTURA);
+            String columna5 = resultSet.getString(HEADER_NAME_PRODUCT_FACTURA);
+            String columna6 = resultSet.getString(HEADER_PRICE_FACTURA);
+            String columna7 = resultSet.getString(HEADER_QUANTITY_FACTURA);
+            String columna8 = resultSet.getString(HEADER_DATE_FACTURA);
 
             table.addCell(columna1);
             table.addCell(columna2);
             table.addCell(columna3);
             table.addCell(columna4);
             table.addCell(columna5);
+            table.addCell(columna6);
+            table.addCell(columna7);
+            table.addCell(columna8);
         }
     }
     

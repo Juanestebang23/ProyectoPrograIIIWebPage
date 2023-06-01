@@ -29,6 +29,9 @@ public class View extends JFrame {
     public static final String SUCCESSFUL_PRODUCT_REGISTER_MESSAGE = "Cliente registrado exitosamente";
     public static final String SUCCESSFUL_ORDER_REGISTER_MESSAGE = "Pedido registrado exitosamente";
     public static final String SUCCESSFUL_ORDER_DETAIL_REGISTER_MESSAGE = "Detalle de pedido registrado exitosamente";
+    public static final String SUCCESSFUL_GENERATE_PDF = "Se generó correctamente el PDF";
+    
+    public static final String GENERATE_PDF_ERROR_MESSAGE = "No sé generó el PDF. Intente de nuevo.";
 
     public static final String REGISTER_DELETED_SUCCESSFUL_MESSAGE = "Registro eliminado correctamente";
     public static final String ID_ERROR_MESSAGE = "No existe una persona con este ID";
@@ -275,14 +278,14 @@ public class View extends JFrame {
     public void showCRUDdataBase() {
         JFrame frameCRUD = new JFrame();
         frameCRUD.setTitle(MAIN_MENU_TITTLE);
-        frameCRUD.setMinimumSize(new Dimension(500, 400));
+        frameCRUD.setMinimumSize(new Dimension(500, 450));
         frameCRUD.setResizable(false);
         frameCRUD.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         frameCRUD.setLayout(new FlowLayout());
         frameCRUD.setLocationRelativeTo(null);
 
         JPanel panel = new JPanel();
-        panel.setLayout(new GridLayout(7, 1, 1, 10));
+        panel.setLayout(new GridLayout(8, 1, 1, 10));
 
         JLabel windowTitle = new JLabel("");
         windowTitle.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 25));
@@ -314,6 +317,11 @@ public class View extends JFrame {
         searchButton.addActionListener((ActionEvent e) -> {
             searchFrame();
         });
+        
+        JButton printPDFButton = new JButton("Imprimir facturas");
+        printPDFButton.addActionListener((ActionEvent e) -> {
+            showGUI_printPDF();
+        });
 
         panel.add(windowTitle);
         panel.add(windowSubTitle);
@@ -322,6 +330,7 @@ public class View extends JFrame {
         panel.add(deleteButton);
         panel.add(updateButton);
         panel.add(searchButton);
+        panel.add(printPDFButton);
 
         frameCRUD.getContentPane().add(panel);
 
@@ -735,6 +744,40 @@ public class View extends JFrame {
 
         presenter.fillDataSelect(tableModel, attribute, value);
         selectFrame.setVisible(true);
+    }
+    
+    private void showGUI_printPDF() {
+        JFrame frame = new JFrame("Ingreso de Ruta y Nombre para crear PDF");
+        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        frame.setSize(400, 300);
+        frame.setLayout(new BorderLayout());
+        frame.setLocationRelativeTo(this);
+
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.PAGE_AXIS));
+
+        JLabel rutaLabel = new JLabel("Ruta:");
+        JTextField rutaField = new JTextField();
+
+        JLabel nombreLabel = new JLabel("Nombre:");
+        JTextField nombreField = new JTextField();
+
+        JButton boton = new JButton("Generar PDF");
+        boton.addActionListener((ActionEvent e) -> {
+            String ruta = rutaField.getText();
+            String nombre = nombreField.getText();
+
+            presenter.createPDFFactura(ruta, nombre);
+        });
+
+        panel.add(rutaLabel);
+        panel.add(rutaField);
+        panel.add(nombreLabel);
+        panel.add(nombreField);
+        panel.add(boton);
+
+        frame.add(panel, BorderLayout.CENTER);
+        frame.setVisible(true);
     }
 
     public int getInt(String numText) {
