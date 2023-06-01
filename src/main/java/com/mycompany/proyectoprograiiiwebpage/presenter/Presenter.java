@@ -86,6 +86,19 @@ public class Presenter {
     public LocalDate getCurrentlyDate() {
         return LocalDate.now();
     }
+    
+    //Metodos para generar PDF
+    public void createPDFClients(String rutaDestino, String nombreArchivo) {
+        model.createPDFClients(rutaDestino, nombreArchivo);
+    }
+    
+    public void createPDFDetalle_Pedidos(String rutaDetino, String nombreArchivo) {
+        model.createPDFDetalle_Pedidos(rutaDetino, nombreArchivo);
+    }
+    
+    public void createPDFPedidos(String rutaDetino, String nombreArchivo) {
+        model.createPDFPedidos(rutaDetino, nombreArchivo);
+    }
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {

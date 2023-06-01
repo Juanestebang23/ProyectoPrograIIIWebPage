@@ -199,11 +199,11 @@ public class Model {
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    public void createPDFClients(String rutaDetino, String nombreArchivo) {
+    public void createPDFClients(String rutaDestino, String nombreArchivo) {
         try (Connection connection = MyConnection.getConnection()) {
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery(QUERY_CLIENT);
-            generateTablePDFClientes(resultSet, rutaDetino, nombreArchivo);
+            generateTablePDFClientes(resultSet, rutaDestino, nombreArchivo);
             resultSet.close();
             statement.close();
         } catch (SQLException e) {
@@ -215,7 +215,7 @@ public class Model {
         try {
             Document document = new Document();
             String rutaCompleta = rutaDestino + "/" + nombreArchivo + EXTENSION;
-            PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(rutaCompleta));
+            PdfWriter.getInstance(document, new FileOutputStream(rutaCompleta));
             document.open();
 
             PdfPTable table = new PdfPTable(5);
