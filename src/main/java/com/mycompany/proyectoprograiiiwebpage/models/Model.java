@@ -1,4 +1,3 @@
-
 package com.mycompany.proyectoprograiiiwebpage.models;
 
 import com.itextpdf.text.Document;
@@ -26,6 +25,8 @@ public class Model {
     public static final String INSERT_DETALLE_PEDIDO_SQL_STATEMENT = "INSERT INTO detalle_pedido (id_pedido, id_producto, cantidad) VALUES (?, ?, ?)";
     public static final String SELECT_CLIENT_COUNT_SQL_STATEMENT = "SELECT count(*) FROM cliente WHERE id_cliente = ?";
     public static final String SELECT_ORDER_DETAIL_COUNT_SQL_STATEMENT = "SELECT count(*) FROM detalle_pedido WHERE id_detalle_pedido = ?";
+    public static final String INSERT_FACTURA_SQL_STATEMENT = "INSERT INTO factura (id_factura, nombre_completo, correo_electronico, direccion, nombre_producto, precio, cantidad, fecha) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+    
 
     public static final String QUERY_CLIENT = "SELECT * FROM cliente";
     public static final String QUERY_DETAIL_ORDER = "SELECT * FROM detalle_pedido";
@@ -45,7 +46,7 @@ public class Model {
     public static final String HEADER_ID_ORDER = "ID PEDIDO";
     public static final String HEADER_IDCLIENT_ORDER = "ID CLIENTE";
     public static final String HEADER_DATE_ORDER = "FECHA";
-    
+
     public static final String HEADER_ID_PRODUCT = "ID PRODUCTO";
     public static final String HEADER_NAME_PRODUCT = "NOMBRE";
     public static final String HEADER_PRICE_PRODUCT = "PRECIO";
@@ -145,7 +146,7 @@ public class Model {
         }
     }
 
-    public boolean insert_detalle_pedido(int id_pedido, int id_producto, int cantidad){
+    public boolean insert_detalle_pedido(int id_pedido, int id_producto, int cantidad) {
         try (Connection conn = MyConnection.getConnection()) {
 
             PreparedStatement pstmt = conn.prepareStatement(INSERT_DETALLE_PEDIDO_SQL_STATEMENT);
@@ -159,11 +160,36 @@ public class Model {
             conn.close();
             return affectedRow > 0;
         } catch (SQLException e) {
+
+            return false;
+        }
+    }
+
+    public boolean insert_factura(int id, String nombre_completo, String correo_electronico, String direccion, String nombre_producto, double precio, int cantidad, LocalDate fecha) {
+        try (Connection conn = MyConnection.getConnection()) {
+
+            PreparedStatement pstmt = conn.prepareStatement(INSERT_FACTURA_SQL_STATEMENT);
+
+            pstmt.setInt(1, id);
+            pstmt.setString(2, nombre_completo);
+            pstmt.setString(3, correo_electronico);
+            pstmt.setString(4, correo_electronico);
+            pstmt.setString(5, nombre_producto);
+            pstmt.setDouble(6, precio);
+            pstmt.setInt(7, cantidad);
+            pstmt.setDate(8, Date.valueOf(fecha));
+            
+            int affectedRow = pstmt.executeUpdate();
+            pstmt.close();
+            conn.close();
+            return affectedRow > 0;
+        } catch (SQLException e) {
             e.printStackTrace();
             return false;
         }
     }
-    public boolean idExists(int id){
+
+    public boolean idExists(int id) {
         try (Connection conn = MyConnection.getConnection()) {
 
             PreparedStatement pstmt = conn.prepareStatement(SELECT_CLIENT_COUNT_SQL_STATEMENT);
@@ -198,7 +224,6 @@ public class Model {
         }
     }
 
-    ///////////////////////////////////////////////////////////////////////////
     public void createPDFClients(String rutaDestino, String nombreArchivo) {
         try (Connection connection = MyConnection.getConnection()) {
             Statement statement = connection.createStatement();
@@ -382,6 +407,7 @@ public class Model {
             System.err.println("ERROR!!! ---->" + e.getMessage());
         }
     }
+
     public void generateTablePDFProducts(ResultSet resultSet, String rutaDestino, String nombreArchivo) {
         try {
             Document document = new Document();
@@ -402,6 +428,7 @@ public class Model {
             System.err.println("Error!!!" + ex.getMessage());
         }
     }
+
     private static void addTableHeaderProducts(PdfPTable table) {
         PdfPCell header1 = new PdfPCell(new Phrase(HEADER_ID_PRODUCT));
         PdfPCell header2 = new PdfPCell(new Phrase(HEADER_NAME_PRODUCT));
@@ -413,6 +440,7 @@ public class Model {
         table.addCell(header3);
         table.addCell(header4);
     }
+
     private static void addTableDataProducts(PdfPTable table, ResultSet resultSet) throws SQLException {
         while (resultSet.next()) {
             String columna1 = resultSet.getString(HEADER_ID_PRODUCT);

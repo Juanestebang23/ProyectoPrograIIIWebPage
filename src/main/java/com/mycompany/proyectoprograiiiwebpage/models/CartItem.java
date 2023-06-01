@@ -7,10 +7,10 @@ package com.mycompany.proyectoprograiiiwebpage.models;
 public class CartItem {
     private int id;
     private String productName;
-    private String price;
+    private double price;
     private int units;
 
-    public CartItem(int id, String productName, String price, int units) {
+    public CartItem(int id, String productName, double price, int units) {
         this.id = id;
         this.productName = productName;
         this.price = price;
@@ -25,7 +25,7 @@ public class CartItem {
         return productName;
     }
 
-    public String getPrice() {
+    public double getPrice() {
         return price;
     }
 

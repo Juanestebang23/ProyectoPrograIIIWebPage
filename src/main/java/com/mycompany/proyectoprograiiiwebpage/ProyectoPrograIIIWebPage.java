@@ -2,6 +2,9 @@ package com.mycompany.proyectoprograiiiwebpage;
 
 import com.github.javafaker.Faker;
 import com.mycompany.proyectoprograiiiwebpage.models.Model;
+import java.sql.Date;
+import java.time.LocalDate;
+import java.time.ZoneId;
 
 public class ProyectoPrograIIIWebPage {
 
@@ -10,6 +13,7 @@ public class ProyectoPrograIIIWebPage {
         Faker faker = new Faker();// Libreria github para obtener datos falsos
 
         //Llenar la tabla con productos
+        /*
         int cantidadProductos = 10; // El número de productos que se quiere agregar
         for (int i = 0; i < cantidadProductos; i++) {
             int id = (int) (Math.random()*10000);
@@ -32,8 +36,7 @@ public class ProyectoPrograIIIWebPage {
 
             }
             System.out.println("------------------------------------");
-        }
-        
+        }*/
         //Llenar la tabla clientes
         /*
         for (int i = 0; i < 5; i++) {
@@ -61,6 +64,39 @@ public class ProyectoPrograIIIWebPage {
             System.out.println("------------------------------------");
             
         }*/
+        //Llenar la tabla factura
+        for (int i = 0; i < 20; i++) {
+            int id = (int) faker.number().randomNumber(5, true);
+            String fullName = faker.name().firstName() + faker.name().lastName();
+            String email = faker.internet().emailAddress();
+            String address = faker.address().streetAddress();
+            String product = faker.commerce().productName();
+            double price = faker.number().randomDouble(2, 10000, 500000);
+            int units = faker.number().numberBetween(1, 10);
+            java.util.Date date = faker.date().birthday(0, 7);
+            LocalDate buyDate = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+            
+
+            System.out.println("Id: " + id);
+            System.out.println("Full Name: " + fullName);
+            System.out.println("Email: " + email);
+            System.out.println("Dirección: " + address);
+            System.out.println("Producto: " + product);
+            System.out.println("Price: " + price);
+            System.out.println("Date: " + buyDate);
+
+            boolean success = model.insert_factura(id, fullName, email, address, product, price, units, buyDate);
+            
+
+            if (success) {
+                System.out.println("Agregado");
+
+            } else {
+                System.out.println("No Agregado");
+
+            }
+            System.out.println("------------------------------------");
+        }
     }
 
 }
