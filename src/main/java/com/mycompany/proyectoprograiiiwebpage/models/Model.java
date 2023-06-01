@@ -1,4 +1,3 @@
-
 package com.mycompany.proyectoprograiiiwebpage.models;
 
 import com.itextpdf.text.Document;
@@ -17,6 +16,8 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDate;
+import java.time.ZoneId;
+import javax.swing.table.DefaultTableModel;
 
 public class Model {
 
@@ -45,7 +46,7 @@ public class Model {
     public static final String HEADER_ID_ORDER = "ID PEDIDO";
     public static final String HEADER_IDCLIENT_ORDER = "ID CLIENTE";
     public static final String HEADER_DATE_ORDER = "FECHA";
-    
+
     public static final String HEADER_ID_PRODUCT = "ID PRODUCTO";
     public static final String HEADER_NAME_PRODUCT = "NOMBRE";
     public static final String HEADER_PRICE_PRODUCT = "PRECIO";
@@ -53,8 +54,8 @@ public class Model {
 
     public static final String EXTENSION = ".pdf";
 
-    private String adminUser = "ADMIN123";
-    private String password = "holass";
+    private static final String ADMIN_USER = "ADMIN123";
+    private String PASSWORD = "holass";
 
     public boolean registerClient(int id, String name, String lastName, String email, String address) {
         try (Connection conn = MyConnection.getConnection()) {
@@ -97,6 +98,39 @@ public class Model {
         }
     }
 
+    public boolean deleteDataClient(int id) {
+        String query = "DELETE FROM cliente WHERE ID_CLIENTE = ?";
+        try (Connection connection = MyConnection.getConnection()) {
+            PreparedStatement statement = connection.prepareStatement(query);
+            // Valor para el ID de la cláusula WHERE
+            statement.setInt(1, id);
+
+            int rowsAffected = statement.executeUpdate();
+            statement.close();
+            connection.close();
+            return rowsAffected > 0;
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean deleteDataProduct(int id) {
+        String query = "DELETE FROM producto WHERE ID_PRODUCTO = ?";
+        try (Connection connection = MyConnection.getConnection()) {
+            PreparedStatement statement = connection.prepareStatement(query);
+            statement.setInt(1, id);
+
+            int rowsAffected = statement.executeUpdate();
+            statement.close();
+            connection.close();
+            return rowsAffected > 0;
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            return false;
+        }
+    }
+
     public boolean registerPedido(int id, int id_cliente, LocalDate fecha) {
         try (Connection conn = MyConnection.getConnection()) {
 
@@ -112,6 +146,186 @@ public class Model {
             return affectedRow > 0;
         } catch (SQLException e) {
             e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean updateClient(String attribute, String value, int id) {
+        String query = "UPDATE cliente SET " + attribute + " = ? WHERE ID = ?";
+        try (Connection connection = MyConnection.getConnection()) {
+            PreparedStatement statement = connection.prepareStatement(query);
+
+            if (value.equalsIgnoreCase("ID_CLIENTE")) {
+                statement.setInt(1, Integer.parseInt(value));
+            } else {
+                statement.setString(1, value);
+            }
+
+            statement.setInt(2, id);
+
+            int rowsAffected = statement.executeUpdate();
+
+            connection.close();
+            statement.close();
+            return rowsAffected > 0;
+
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean fillTableClientes(DefaultTableModel tableModel) {
+        try (Connection connection = MyConnection.getConnection(); Statement statement = connection.createStatement()) {
+            String query = "SELECT * FROM cliente";
+            ResultSet resultSet = statement.executeQuery(query);
+
+            int columnCount = resultSet.getMetaData().getColumnCount();
+            int dataCount = 0;
+
+            for (int i = 1; i <= columnCount; i++) {
+                tableModel.addColumn(resultSet.getMetaData().getColumnLabel(i));
+            }
+
+            while (resultSet.next()) {
+                dataCount++;
+                Object[] row = new Object[columnCount];
+                for (int i = 1; i <= columnCount; i++) {
+                    row[i - 1] = resultSet.getObject(i);
+                }
+                tableModel.addRow(row);
+            }
+
+            while (resultSet.next()) {
+
+                int id = resultSet.getInt("ID_CLIENTE");
+                String nombre = resultSet.getString("NOMBRES");
+                String apellido = resultSet.getString("APELLIDOS");
+                String correo = resultSet.getString("CORREO_ELECTRONICO");
+                String direccion = resultSet.getString("DIRECCION");
+
+                tableModel.addRow(new Object[]{id, nombre, apellido, correo, direccion});
+            }
+            connection.close();
+            resultSet.close();
+            return dataCount > 0;
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean fillTableProducts(DefaultTableModel tableModel) {
+        try (Connection connection = MyConnection.getConnection(); Statement statement = connection.createStatement()) {
+            String query = "SELECT * FROM producto";
+            ResultSet resultSet = statement.executeQuery(query);
+
+            int columnCount = resultSet.getMetaData().getColumnCount();
+            int dataCount = 0;
+
+            for (int i = 1; i <= columnCount; i++) {
+                tableModel.addColumn(resultSet.getMetaData().getColumnLabel(i));
+            }
+
+            while (resultSet.next()) {
+                dataCount++;
+                Object[] row = new Object[columnCount];
+                for (int i = 1; i <= columnCount; i++) {
+                    row[i - 1] = resultSet.getObject(i);
+                }
+                tableModel.addRow(row);
+            }
+
+            while (resultSet.next()) {
+
+                int id = resultSet.getInt("ID_PRODUCTO");
+                String nombre = resultSet.getString("NOMBRE_PRODUCTO");
+                String precio = resultSet.getString("PRECIO");
+                String descrip = resultSet.getString("DESCRIPCION");
+
+                tableModel.addRow(new Object[]{id, nombre, precio, descrip});
+            }
+            connection.close();
+            resultSet.close();
+            return dataCount > 0;
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean fillTablePedido(DefaultTableModel tableModel) {
+        try (Connection connection = MyConnection.getConnection(); Statement statement = connection.createStatement()) {
+            String query = "SELECT * FROM pedido";
+            ResultSet resultSet = statement.executeQuery(query);
+
+            int columnCount = resultSet.getMetaData().getColumnCount();
+            int dataCount = 0;
+
+            for (int i = 1; i <= columnCount; i++) {
+                tableModel.addColumn(resultSet.getMetaData().getColumnLabel(i));
+            }
+
+            while (resultSet.next()) {
+                dataCount++;
+                Object[] row = new Object[columnCount];
+                for (int i = 1; i <= columnCount; i++) {
+                    row[i - 1] = resultSet.getObject(i);
+                }
+                tableModel.addRow(row);
+            }
+
+            while (resultSet.next()) {
+
+                int id = resultSet.getInt("ID_PEDIDO");
+                int idCliente = resultSet.getInt("ID_CLIENTE");
+                LocalDate fecha = resultSet.getDate("FECHA").toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+
+                tableModel.addRow(new Object[]{id, idCliente, fecha});
+            }
+            connection.close();
+            resultSet.close();
+            return dataCount > 0;
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean fillTableDetallePedido(DefaultTableModel tableModel) {
+        try (Connection connection = MyConnection.getConnection(); Statement statement = connection.createStatement()) {
+            String query = "SELECT * FROM detalle_pedido";
+            ResultSet resultSet = statement.executeQuery(query);
+
+            int columnCount = resultSet.getMetaData().getColumnCount();
+            int dataCount = 0;
+
+            for (int i = 1; i <= columnCount; i++) {
+                tableModel.addColumn(resultSet.getMetaData().getColumnLabel(i));
+            }
+
+            while (resultSet.next()) {
+                dataCount++;
+                Object[] row = new Object[columnCount];
+                for (int i = 1; i <= columnCount; i++) {
+                    row[i - 1] = resultSet.getObject(i);
+                }
+                tableModel.addRow(row);
+            }
+
+            while (resultSet.next()) {
+
+                int id = resultSet.getInt("ID_PEDIDO");
+                int idProduct = resultSet.getInt("ID_PRODUCTO");
+                int cantidad = resultSet.getInt("CANTIDAD");
+
+                tableModel.addRow(new Object[]{id, idProduct, cantidad});
+            }
+            connection.close();
+            resultSet.close();
+            return dataCount > 0;
+        } catch (SQLException ex) {
+            ex.printStackTrace();
             return false;
         }
     }
@@ -145,7 +359,7 @@ public class Model {
         }
     }
 
-    public boolean insert_detalle_pedido(int id_pedido, int id_producto, int cantidad){
+    public boolean insert_detalle_pedido(int id_pedido, int id_producto, int cantidad) {
         try (Connection conn = MyConnection.getConnection()) {
 
             PreparedStatement pstmt = conn.prepareStatement(INSERT_DETALLE_PEDIDO_SQL_STATEMENT);
@@ -163,7 +377,8 @@ public class Model {
             return false;
         }
     }
-    public boolean idExists(int id){
+
+    public boolean idExists(int id) {
         try (Connection conn = MyConnection.getConnection()) {
 
             PreparedStatement pstmt = conn.prepareStatement(SELECT_CLIENT_COUNT_SQL_STATEMENT);
@@ -382,6 +597,7 @@ public class Model {
             System.err.println("ERROR!!! ---->" + e.getMessage());
         }
     }
+
     public void generateTablePDFProducts(ResultSet resultSet, String rutaDestino, String nombreArchivo) {
         try {
             Document document = new Document();
@@ -402,6 +618,7 @@ public class Model {
             System.err.println("Error!!!" + ex.getMessage());
         }
     }
+
     private static void addTableHeaderProducts(PdfPTable table) {
         PdfPCell header1 = new PdfPCell(new Phrase(HEADER_ID_PRODUCT));
         PdfPCell header2 = new PdfPCell(new Phrase(HEADER_NAME_PRODUCT));
@@ -413,6 +630,7 @@ public class Model {
         table.addCell(header3);
         table.addCell(header4);
     }
+
     private static void addTableDataProducts(PdfPTable table, ResultSet resultSet) throws SQLException {
         while (resultSet.next()) {
             String columna1 = resultSet.getString(HEADER_ID_PRODUCT);
@@ -426,10 +644,12 @@ public class Model {
             table.addCell(columna4);
         }
     }
-    public String getUserAdmin(){
-        return adminUser;
+
+    public String getUserAdmin() {
+        return ADMIN_USER;
     }
-    public String getUserPassword(){
-        return password;
+
+    public String getUserPassword() {
+        return PASSWORD;
     }
 }

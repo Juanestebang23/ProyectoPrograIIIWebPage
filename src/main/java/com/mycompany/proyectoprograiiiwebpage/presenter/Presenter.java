@@ -1,13 +1,11 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
+
 package com.mycompany.proyectoprograiiiwebpage.presenter;
 
 import com.mycompany.proyectoprograiiiwebpage.models.Model;
 import com.mycompany.proyectoprograiiiwebpage.views.View;
 import java.time.LocalDate;
 import javax.swing.SwingUtilities;
+import javax.swing.table.DefaultTableModel;
 
 public class Presenter {
 
@@ -26,7 +24,7 @@ public class Presenter {
     public void insertCliente(int id, String name, String lastName, String email, String address) {
         boolean success = model.registerClient(id, name, lastName, email, address);
         if (success) {
-            view.showSuccessMessage(View.SUCCESSFUL_PURCHASE_MESSAGE);
+            view.showSuccessMessage(View.SUCCESSFUL_CLIENT_REGISTER_MESSAGE);
         } else {
             view.showErrorMessage(View.ERROR_PURCHASE_MESSAGE);
         }
@@ -35,9 +33,28 @@ public class Presenter {
     public void insertProducto(int id, String name, double price, String description) {
         boolean success = model.registerProducto(id, name, price, description);
         if (success) {
-            //view.showSuccessMessage(View.);
+            view.showSuccessMessage(View.SUCCESSFUL_PRODUCT_REGISTER_MESSAGE);
         } else {
             view.showErrorMessage(View.ERROR_CLIENT_REGISTER_MESSAGE);
+        }
+    }
+    
+    public void deleteDataClient(int id) {
+        boolean success = model.deleteDataClient(id);
+        if (success) {
+            view.showSuccessMessage(View.REGISTER_DELETED_SUCCESSFUL_MESSAGE);
+        } else {
+            view.showErrorMessage(View.ID_ERROR_MESSAGE);
+            view.showGUI_DELETE();
+        }
+    }
+    public void deleteDataProduct(int id) {
+        boolean success = model.deleteDataProduct(id);
+        if (success) {
+            view.showSuccessMessage(View.REGISTER_DELETED_SUCCESSFUL_MESSAGE);
+        } else {
+            view.showErrorMessage(View.ID_ERROR_MESSAGE);
+            view.showGUI_DELETE();
         }
     }
 
@@ -50,13 +67,38 @@ public class Presenter {
             view.showErrorMessage(View.ERROR_ORDER_REGISTER_MESSAGE);
         }
     }
-
+    
     public void insert_detalle_pedido(int id_pedido, int id_producto, int cantidad) {
         boolean succcess = model.insert_detalle_pedido(id_pedido, id_producto, cantidad);
         if (succcess) {
             view.showSuccessMessage(View.SUCCESSFUL_ORDER_DETAIL_REGISTER_MESSAGE);
         } else {
             view.showErrorMessage(View.ERROR_ORDER_DETAIL_REGISTER_MESSAGE);
+        }
+    }
+    
+    public void fillDataClientes(DefaultTableModel tableModel) {
+        boolean success = model.fillTableClientes(tableModel);
+        if (!success) {
+            view.showSuccessMessage(View.EMPTY_DB_MESSAGE);
+        }
+    }
+    public void fillDataProductos(DefaultTableModel tableModel) {
+        boolean success = model.fillTableProducts(tableModel);
+        if (!success) {
+            view.showSuccessMessage(View.EMPTY_DB_MESSAGE);
+        }
+    }
+    public void fillDataDetallePedidos(DefaultTableModel tableModel) {
+        boolean success = model.fillTableDetallePedido(tableModel);
+        if (!success) {
+            view.showSuccessMessage(View.EMPTY_DB_MESSAGE);
+        }
+    }
+    public void fillDataPedidos(DefaultTableModel tableModel) {
+        boolean success = model.fillTablePedido(tableModel);
+        if (!success) {
+            view.showSuccessMessage(View.EMPTY_DB_MESSAGE);
         }
     }
 
@@ -105,5 +147,4 @@ public class Presenter {
 
         });
     }
-
 }

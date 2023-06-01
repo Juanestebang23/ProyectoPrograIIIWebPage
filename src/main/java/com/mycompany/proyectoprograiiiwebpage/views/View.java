@@ -18,13 +18,23 @@ public class View extends JFrame {
     public static final String MAIN_MENU_TITTLE = "Acciones de administrador";
     public static final String MAIN_WINDOW_TITTLE = "Bienvendo al gestor de base de datos";
     public static final String MAIN_WINDOW_SUB_TITTLE = "Seleccione una opción:";
-    public static final String[] TABLES = {"CLIENTE", "DETALLE PEDIDO", "PEDIDO", "PRODUCTO"};
+
+    public static final String[] TABLES = {"CLIENTE", "PRODUCTO"};
+    public static final String[] ATTRIBUTES_CLIENT = {"ID", "NOMBRES", "APELLIDOS", "CORREO", "DIRECCION"};
+    public static final String[] ATTRIBUTES_PRODUCTS = {"ID", "NOMBRE", "PRECIO", "DESCRIPCION"};
 
     public static final Dimension SCREEN_DIMENSION = Toolkit.getDefaultToolkit().getScreenSize();
     public static final String SUCCESSFUL_PURCHASE_MESSAGE = "Gracias por su compra";
     public static final String SUCCESSFUL_CLIENT_REGISTER_MESSAGE = "Cliente registrado exitosamente";
+    public static final String SUCCESSFUL_PRODUCT_REGISTER_MESSAGE = "Cliente registrado exitosamente";
     public static final String SUCCESSFUL_ORDER_REGISTER_MESSAGE = "Pedido registrado exitosamente";
     public static final String SUCCESSFUL_ORDER_DETAIL_REGISTER_MESSAGE = "Detalle de pedido registrado exitosamente";
+
+    public static final String REGISTER_DELETED_SUCCESSFUL_MESSAGE = "Registro eliminado correctamente";
+    public static final String ID_ERROR_MESSAGE = "No existe una persona con este ID";
+
+    public static final String EMPTY_DB_MESSAGE = "No existe una persona con este ID";
+
     public static final String ERROR_PURCHASE_MESSAGE = "Error al realizar la compra";
     public static final String ERROR_CLIENT_REGISTER_MESSAGE = "Error al registrar el cliente";
     public static final String ERROR_ORDER_REGISTER_MESSAGE = "Error al registrar el pedido";
@@ -165,6 +175,8 @@ public class View extends JFrame {
                 String password = new String(passwordField.getPassword());
                 if (username.equals(presenter.getUserAdmin()) && password.equals(presenter.getUserPassword())) {
                     showCRUDdataBase();
+                } else {
+                    JOptionPane.showMessageDialog(null, "Clave incorrecta", "Error", JOptionPane.ERROR_MESSAGE);
                 }
             }
         });
@@ -285,17 +297,17 @@ public class View extends JFrame {
 
         JButton dataButton = new JButton("Todos los registros");
         dataButton.addActionListener((ActionEvent e) -> {
-            //showGUI_SELECT_ALL();
+            showGUI_SELECT_ALL();
         });
 
         JButton deleteButton = new JButton("Eliminar registros");
         deleteButton.addActionListener((ActionEvent e) -> {
-            //showGUI_DELETE();
+            showGUI_DELETE();
         });
 
         JButton updateButton = new JButton("Actualizar registros");
         updateButton.addActionListener((ActionEvent e) -> {
-            //showGUI_UPDATE();
+            showGUI_UPDATE();
         });
 
         JButton searchButton = new JButton("Consultar registros");
@@ -319,7 +331,7 @@ public class View extends JFrame {
     public void showGUI_INSERT() {
         JFrame insertFrame = new JFrame("Agregar Registro");
         insertFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        insertFrame.setSize(400, 200);
+        insertFrame.setSize(400, 280);
         insertFrame.setLayout(new FlowLayout());
         insertFrame.setLocationRelativeTo(this);
 
@@ -447,18 +459,38 @@ public class View extends JFrame {
     private void showGUI_SELECT_ALL() {
         JFrame selectFrame = new JFrame("Mostrar Registros");
         selectFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        selectFrame.setSize(400, 300);
+        selectFrame.setSize(600, 1000);
         selectFrame.setLayout(new BorderLayout());
         selectFrame.setLocationRelativeTo(this);
 
-        DefaultTableModel tableModel = new DefaultTableModel();
-        JTable table = new JTable(tableModel);
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 
-        JScrollPane scrollPane = new JScrollPane(table);
-        selectFrame.add(scrollPane, BorderLayout.CENTER);
+        DefaultTableModel tableModelClientes = new DefaultTableModel();
+        JTable tableClientes = new JTable(tableModelClientes);
+        JScrollPane scrollPane1Clientes = new JScrollPane(tableClientes);
+        panel.add(scrollPane1Clientes);
+        presenter.fillDataClientes(tableModelClientes);
 
-        // Llenar la tabla con los datos de la base de datos
-        //presenter.fillData(tableModel);
+        DefaultTableModel tableModelProducts = new DefaultTableModel();
+        JTable tableProducts = new JTable(tableModelProducts);
+        JScrollPane scrollPane1Products = new JScrollPane(tableProducts);
+        panel.add(scrollPane1Products);
+        presenter.fillDataProductos(tableModelProducts);
+
+        DefaultTableModel tableModelPedido = new DefaultTableModel();
+        JTable tablePedido = new JTable(tableModelPedido);
+        JScrollPane scrollPane1Pedido = new JScrollPane(tablePedido);
+        panel.add(scrollPane1Pedido);
+        presenter.fillDataPedidos(tableModelPedido);
+
+        DefaultTableModel tableModelDetalle = new DefaultTableModel();
+        JTable tableDetalle = new JTable(tableModelDetalle);
+        JScrollPane scrollPane1Detalle = new JScrollPane(tableDetalle);
+        panel.add(scrollPane1Detalle);
+        presenter.fillDataDetallePedidos(tableModelDetalle);
+
+        selectFrame.add(panel, BorderLayout.CENTER);
         selectFrame.setVisible(true);
     }
 
@@ -470,69 +502,128 @@ public class View extends JFrame {
         deleteFrame.setLayout(new FlowLayout());
         deleteFrame.setLocationRelativeTo(null);
 
-        JTextField idField = new JTextField(10);;
-        JButton button = new JButton("Eliminar");;
+        JPanel containerPanel = new JPanel();
+        deleteFrame.add(containerPanel);
 
-        button.addActionListener((e) -> {
-            int id = getInt(idField.getText());
-            if (id != -1) {
-                //presenter.deleteData(id);
-                deleteFrame.dispose();
-            } else {
-                deleteFrame.dispose();
-                JOptionPane.showMessageDialog(deleteFrame, "Error: Ingrese un número entero válido para el ID");
-                showGUI_DELETE();
+        JComboBox comboTables = new JComboBox<>(TABLES);
+        deleteFrame.add(comboTables);
+
+        comboTables.addActionListener((ActionEvent e) -> {
+            String optionSelected = comboTables.getSelectedItem().toString();
+            containerPanel.removeAll();
+            if (optionSelected.equals("CLIENTE")) {
+                JPanel panelClient = createPanelDeleteClient();
+                containerPanel.add(panelClient);
+            } else if (optionSelected.equals("PRODUCTO")) {
+                JPanel panelProduct = createPanelDeleteProduct();
+                containerPanel.add(panelProduct);
             }
+            deleteFrame.revalidate();
         });
-
-        deleteFrame.add(new JLabel("ID del registro a eliminar:"));
-        deleteFrame.add(idField);
-        deleteFrame.add(button);
-
         deleteFrame.setVisible(true);
     }
 
-    public void showGUI_UPDATE() {
-        JFrame updateFrame = new JFrame("Actualizar Persona");
-        updateFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        updateFrame.setSize(400, 200);
-        updateFrame.setLocationRelativeTo(this);
+    private JPanel createPanelDeleteClient() {
+        JPanel panelClient = new JPanel();
+        panelClient.setLayout(new BoxLayout(panelClient, BoxLayout.PAGE_AXIS));
 
-        JPanel panel = new JPanel(new GridLayout(4, 2, 5, 10));
+        JLabel label = new JLabel("Ingrese el ID del cliente: ");
+        JTextField idField = new JTextField(10);
+        JButton button1 = new JButton("Eliminar");
+        button1.addActionListener((e) -> {
+            int id = getInt(idField.getText());
+            if (id != -1) {
+                presenter.deleteDataClient(id);
+            } else {
+                JOptionPane.showMessageDialog(panelClient, "Error: Ingrese un número entero válido para el ID");
+                showGUI_DELETE();
+            }
+        });
+        panelClient.add(label);
+        panelClient.add(idField);
+        panelClient.add(button1);
+        return panelClient;
+    }
+
+    private JPanel createPanelDeleteProduct() {
+        JPanel panelProduct = new JPanel();
+        panelProduct.setLayout(new BoxLayout(panelProduct, BoxLayout.PAGE_AXIS));
+
+        JLabel label = new JLabel("Ingrese el ID del producto: ");
+        JTextField idField = new JTextField(10);
+        JButton button1 = new JButton("Eliminar");
+        button1.addActionListener((e) -> {
+            int id = getInt(idField.getText());
+            if (id != -1) {
+                presenter.deleteDataProduct(id);
+            } else {
+                JOptionPane.showMessageDialog(panelProduct, "Error: Ingrese un número entero válido para el ID");
+                showGUI_DELETE();
+            }
+        });
+        panelProduct.add(label);
+        panelProduct.add(idField);
+        panelProduct.add(button1);
+        return panelProduct;
+    }
+
+    public void showGUI_UPDATE() {
+        JFrame insertFrame = new JFrame("Actualizar Registro");
+        insertFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        insertFrame.setSize(400, 280);
+        insertFrame.setLayout(new FlowLayout());
+        insertFrame.setLocationRelativeTo(this);
+
+        JPanel containerPanel = new JPanel();
+        insertFrame.add(containerPanel);
+
+        JComboBox comboTables = new JComboBox<>(TABLES);
+        insertFrame.add(comboTables);
+        comboTables.addActionListener((ActionEvent e) -> {
+            String optionSelected = comboTables.getSelectedItem().toString();
+            containerPanel.removeAll();
+            if (optionSelected.equals("CLIENTE")) {
+                JPanel panelClientToUpdate = createPanelClientToUpdate();
+                containerPanel.add(panelClientToUpdate);
+            } else if (optionSelected.equals("PRODUCTO")) {
+                JPanel panelProductToUpdate = createPanelProductToUpdate();
+                containerPanel.add(panelProductToUpdate);
+            }
+            insertFrame.revalidate();
+        });
+        insertFrame.setVisible(true);
+
+    }
+
+    private JPanel createPanelClientToUpdate() {
+        JPanel panel = new JPanel();
+        panel.setLayout(new GridLayout(4, 2, 5, 10));
 
         JLabel idLabel = new JLabel("ID:");
         JTextField idField = new JTextField(10);
 
         JLabel attributeLabel = new JLabel("Atributo:");
 
-        JComboBox attributeComboBox = new JComboBox<>();//"FALTA AÑADIR"
+        JComboBox<String> attributeComboBox = new JComboBox<>(ATTRIBUTES_CLIENT);
 
         JLabel valueLabel = new JLabel("Nuevo valor:");
         JTextField valueField = new JTextField(10);
 
         JButton updateButton = new JButton("Actualizar");
         updateButton.addActionListener((ActionEvent e) -> {
-
             int id = getInt(idField.getText());
             String value = valueField.getText();
             int valueInt = getInt(value);
             String attribute = attributeComboBox.getSelectedItem().toString();
 
             if (id != -1) {
-                if (attribute.equals("EDAD") && valueInt == -1) {
-                    JOptionPane.showMessageDialog(updateFrame, "Error: Ingrese un número entero válido para la edad");
-                } else {
-                    //presenter.updatePerson(id, attribute, value);
-                    updateFrame.dispose();
-                }
+                //presenter.updatePerson(id, attribute, value);
             } else {
-                updateFrame.dispose();
                 if (id == -1) {
-                    JOptionPane.showMessageDialog(updateFrame, "Error: Ingrese un número entero válido para el ID");
+                    JOptionPane.showMessageDialog(panel, "Error: Ingrese un número entero válido para el ID");
                 }
                 showGUI_UPDATE();
             }
-
         });
 
         panel.add(idLabel);
@@ -542,10 +633,52 @@ public class View extends JFrame {
         panel.add(valueLabel);
         panel.add(valueField);
         panel.add(updateButton);
+        return panel;
+    }
 
-        updateFrame.add(panel);
-        updateFrame.setVisible(true);
+    private JPanel createPanelProductToUpdate() {
+JPanel panel = new JPanel();
+        panel.setLayout(new GridLayout(4, 2, 5, 10));
 
+        JLabel idLabel = new JLabel("ID:");
+        JTextField idField = new JTextField(10);
+
+        JLabel attributeLabel = new JLabel("Atributo:");
+
+        JComboBox<String> attributeComboBox = new JComboBox<>(ATTRIBUTES_PRODUCTS);
+
+        JLabel valueLabel = new JLabel("Nuevo valor:");
+        JTextField valueField = new JTextField(10);
+
+        JButton updateButton = new JButton("Actualizar");
+        updateButton.addActionListener((ActionEvent e) -> {
+            int id = getInt(idField.getText());
+            String value = valueField.getText();
+            int valueInt = getInt(value);
+            String attribute = attributeComboBox.getSelectedItem().toString();
+
+            if (id != -1) {
+                if (attribute.equals("EDAD") && valueInt == -1) {
+                    JOptionPane.showMessageDialog(panel, "Error: Ingrese un número entero válido para la edad");
+                } else {
+                    //presenter.updateProduct(id, attribute, value);
+                }
+            } else {
+                if (id == -1) {
+                    JOptionPane.showMessageDialog(panel, "Error: Ingrese un número entero válido para el ID");
+                }
+                showGUI_UPDATE();
+            }
+        });
+
+        panel.add(idLabel);
+        panel.add(idField);
+        panel.add(attributeLabel);
+        panel.add(attributeComboBox);
+        panel.add(valueLabel);
+        panel.add(valueField);
+        panel.add(updateButton);
+        return panel;
     }
 
     public void searchFrame() {
@@ -792,6 +925,7 @@ public class View extends JFrame {
         frame.revalidate(); // Actualiza el diseño del JFrame
         frame.repaint(); // Vuelve a pintar el JFrame
     }
+
     public boolean isValid(String text) {
         return !text.equals("");
     }
